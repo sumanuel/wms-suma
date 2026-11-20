@@ -4,6 +4,7 @@ import type { Db } from "@/lib/tenant";
 import { ErrorDeNegocio, ESTADOS_CALIDAD } from "@/lib/inventario/calidad";
 import { SIN_VENCIMIENTO } from "@/lib/inventario/carga";
 import { reubicarCaja } from "@/lib/movil/servicio";
+import { aplicarRecepcion } from "@/lib/compras/ordenes";
 
 // Recepción y almacenamiento dirigido. Recibir crea el lote (si no existe) con su primer estado de calidad y una caja por rótulo en la
 // ubicación de recibo de la bodega (t_entradas_ras + t_pic); almacenar lleva cada caja del recibo a su ubicación definitiva, con una
@@ -17,7 +18,7 @@ const r4 = (n: number) => Math.round(n * 10000) / 10000;
 export const PREFIJO_RECEPCION = "Recepción ";
 
 export type LineaRecepcion = { ean: string; lote: string; vence: string | null; cajas: number; cantidad: number };
-export type DatosRecepcion = { bodega: string; documento: string; nit: string | null; estado: string; lineas: LineaRecepcion[] };
+export type DatosRecepcion = { bodega: string; documento: string; nit: string | null; estado: string; lineas: LineaRecepcion[]; orden?: number | null };
 
 export async function ubicacionDeRecibo(db: Db | Prisma.TransactionClient, bodega: string) {
   const f = await db.$queryRaw<{ ubicacion: string; seleccion: boolean | null }[]>`
@@ -28,7 +29,7 @@ export async function ubicacionDeRecibo(db: Db | Prisma.TransactionClient, bodeg
 const esFecha = (s: string) => /^\d{4}-\d{2}-\d{2}$/.test(s) && new Date(`${s}T00:00:00.000Z`).toISOString().slice(0, 10) === s;
 
 export async function recibir(db: Db, d: DatosRecepcion) {
-  const documento = d.documento.trim();
+  const documento = d.orden ? `OC-${d.orden}` : d.documento.trim();
   if (documento.length < 3 || documento.length > 40) throw new ErrorDeNegocio("El documento (orden de compra, remisión o factura) debe tener entre 3 y 40 caracteres.");
   if (!(ESTADOS_CALIDAD as readonly string[]).includes(d.estado)) throw new ErrorDeNegocio("Elige el estado de calidad de los lotes nuevos.");
   if (d.lineas.length === 0) throw new ErrorDeNegocio("Agrega al menos una línea.");
@@ -47,13 +48,25 @@ export async function recibir(db: Db, d: DatosRecepcion) {
       if (l.vence < hoy) throw new ErrorDeNegocio(`Línea ${n}: el lote ya está vencido (${l.vence}); no se recibe.`);
     }
   });
-  const nit = d.nit?.trim() || null;
+  const nit = d.orden ? null : d.nit?.trim() || null;
   if (nit && !(await db.clientes.findUnique({ where: { nit }, select: { nit: true } }))) throw new ErrorDeNegocio(`No existe un tercero con el NIT ${nit}.`);
 
   return db.$transaction(async (tx) => {
     const bod = await tx.insBodega.findUnique({ where: { bodega: d.bodega }, select: { bodega: true, prcierre: true } });
     if (!bod) throw new ErrorDeNegocio(`No existe la bodega «${d.bodega}».`);
     if (bod.prcierre) throw new ErrorDeNegocio(`La bodega ${d.bodega} está cerrada.`);
+    let nitUso = nit;
+    let tolerancia = 0;
+    if (d.orden) {
+      const oc = await tx.ordenCompra.findUnique({ where: { numordencompra: d.orden }, select: { proveedor: true } });
+      if (!oc) throw new ErrorDeNegocio(`No existe la orden de compra ${d.orden}.`);
+      nitUso = oc.proveedor;
+      const bo = await tx.$queryRaw<{ bodega: string | null }[]>`SELECT DISTINCT bodega FROM t_detalle_orden_compra WHERE nordencompra = ${d.orden}`;
+      if (bo.some((x) => x.bodega && x.bodega !== d.bodega)) throw new ErrorDeNegocio(`La orden ${d.orden} es para la bodega ${bo.map((x) => x.bodega).join(", ")}, no para ${d.bodega}.`);
+      const cfg = await tx.configuracion.findUnique({ where: { clave: "recepcion.tolerancia" } });
+      const t = cfg && typeof cfg.valor === "object" && cfg.valor ? Number((cfg.valor as { porcentaje?: unknown }).porcentaje) : 0;
+      tolerancia = Number.isFinite(t) && t > 0 ? t : 0;
+    }
     const rec = await ubicacionDeRecibo(tx, d.bodega);
     if (!rec) throw new ErrorDeNegocio(`La bodega ${d.bodega} no tiene ubicación de recibo: crea una ubicación que se llame RECIBO (o RECEPCION) en esa bodega.`);
     if (rec.seleccion) throw new ErrorDeNegocio(`La ubicación de recibo «${rec.ubicacion}» está bloqueada.`);
@@ -97,7 +110,7 @@ export async function recibir(db: Db, d: DatosRecepcion) {
     }
     for (const [k, x] of lotes) {
       if (x.existe) continue;
-      await tx.maestroLotePt.create({ data: { loteproveedor: x.lote, nitprov: nit ?? "SIN-PROVEEDOR", codean: x.ean, fechaingresa: ahora, fechavence: x.vence ? new Date(`${x.vence}T00:00:00.000Z`) : SIN_VENCIMIENTO, confirmacertif: x.vence ? 0 : 1, numcontrolliberacion: null } });
+      await tx.maestroLotePt.create({ data: { loteproveedor: x.lote, nitprov: nitUso ?? "SIN-PROVEEDOR", codean: x.ean, fechaingresa: ahora, fechavence: x.vence ? new Date(`${x.vence}T00:00:00.000Z`) : SIN_VENCIMIENTO, confirmacertif: x.vence ? 0 : 1, numcontrolliberacion: null } });
       await tx.historiaStatusCalidad.create({ data: { lote: x.lote, productoean: x.ean, fecha_registro: ahora, estado: d.estado, id_usuario: 0, saldo: r4(saldoNuevo.get(k) ?? 0) } });
       x.estado = d.estado;
     }
@@ -123,7 +136,13 @@ export async function recibir(db: Db, d: DatosRecepcion) {
       SELECT p.cajap, p.ubicacion, now(), 0, 'RECEPCION', NULL, p.entradas, p.cod_producto, p.lote, NULL, p.bodepicking, ${documento}
       FROM t_pic p WHERE p.cajap >= ${primera} AND p.cajap < ${siguiente}`;
     await tx.insCoordenadas.updateMany({ where: { ubicacion: rec.ubicacion }, data: { ocupacion: 1 } });
-    return { documento, desde: primera, hasta: siguiente - 1, cajas: entradas.length, unidades: r4(unidades), ubicacion: rec.ubicacion, lotesNuevos: [...lotes.values()].filter((x) => !x.existe).length };
+    let ordenCompleta = false;
+    if (d.orden) {
+      const porArticulo = new Map<string, number>();
+      for (const l of d.lineas) porArticulo.set(l.ean.trim(), r4((porArticulo.get(l.ean.trim()) ?? 0) + l.cajas * l.cantidad));
+      ordenCompleta = (await aplicarRecepcion(tx, d.orden, porArticulo, tolerancia)).completa;
+    }
+    return { ordenCompleta, documento, desde: primera, hasta: siguiente - 1, cajas: entradas.length, unidades: r4(unidades), ubicacion: rec.ubicacion, lotesNuevos: [...lotes.values()].filter((x) => !x.existe).length };
   }, { timeout: 120000, maxWait: 20000 });
 }
 

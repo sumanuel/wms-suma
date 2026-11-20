@@ -3,20 +3,44 @@ import { Etiqueta, Tarjeta, formatearFechaHora } from "@/components/ui";
 import { requerirPermiso } from "@/lib/dal";
 import { ESTADOS_CALIDAD } from "@/lib/inventario/calidad";
 import { bodegasConStock } from "@/lib/inventario/consultas";
+import { ESTADOS, fichaOrden, ordenesPorRecibir } from "@/lib/compras/ordenes";
 import { recepcionesRecientes } from "@/lib/recepcion/servicio";
-import { FormularioRecepcion } from "./formulario-recepcion";
+import { Aviso } from "@/components/ui";
+import { FormularioRecepcion, type OrdenParaRecibir } from "./formulario-recepcion";
 
-export default async function Recepcion() {
+export default async function Recepcion({ searchParams }: { searchParams: Promise<{ oc?: string }> }) {
   const { db } = await requerirPermiso("inventario", "crear");
-  const [bodegas, recientes] = await Promise.all([bodegasConStock(db), recepcionesRecientes(db)]);
+  const q = await searchParams;
+  const [bodegas, recientes, porRecibir] = await Promise.all([bodegasConStock(db), recepcionesRecientes(db), ordenesPorRecibir(db)]);
+  let orden: OrdenParaRecibir | undefined;
+  let problema: string | null = null;
+  if (q.oc) {
+    const f = /^\d+$/.test(q.oc) ? await fichaOrden(db, Number(q.oc)) : null;
+    if (!f) problema = `No existe la orden de compra ${q.oc}.`;
+    else if (f.orden.estado !== ESTADOS.abierta && f.orden.estado !== ESTADOS.parcial) problema = `La orden ${q.oc} está ${String(f.orden.estado).toLowerCase()}: no admite recepciones.`;
+    else {
+      const pend = f.lineas.filter((l) => Number(l.pendiente) > 0);
+      if (pend.length === 0) problema = `La orden ${q.oc} no tiene nada pendiente.`;
+      else orden = { numero: f.orden.numordencompra, proveedor: f.orden.proveedor ?? "", bodega: String(pend[0].bodega ?? ""), lineas: pend.map((l) => ({ ean: String(l.ean), articulo: String(l.articulo ?? l.ean), pendiente: Number(l.pendiente) })) };
+    }
+  }
   return (
     <div className="flex flex-col gap-5">
       <Tarjeta className="p-5">
-        <h2 className="mb-1 text-base font-semibold">Recibir mercancía</h2>
+        <h2 className="mb-1 text-base font-semibold">{orden ? `Recibir contra la orden de compra ${orden.numero}` : "Recibir mercancía"}</h2>
+        {problema ? <div className="mb-3"><Aviso tono="error">{problema}</Aviso></div> : null}
         <p className="mb-4 max-w-3xl text-[13.5px] text-gris-500">
           Cada línea crea una caja por rótulo en la ubicación de recibo de la bodega (la que se llama RECIBO o RECEPCION) y, si el lote no existe, lo crea. Después se imprimen las etiquetas y se lleva cada caja a su lugar en <Link href="/inventario/almacenar" className="font-medium text-marca-texto hover:underline">Almacenar</Link>. Es todo o nada.
         </p>
-        <FormularioRecepcion bodegas={bodegas} estados={[...ESTADOS_CALIDAD]} />
+        <FormularioRecepcion key={orden?.numero ?? "libre"} bodegas={bodegas} estados={[...ESTADOS_CALIDAD]} orden={orden} />
+        {!orden && porRecibir.length > 0 ? (
+          <div className="mt-5 border-t border-linea pt-4">
+            <h3 className="mb-2 text-sm font-semibold">Órdenes de compra por recibir</h3>
+            <ul className="flex flex-wrap gap-2">
+              {porRecibir.map((o) => <li key={String(o.numero)}><Link href={`/inventario/recepcion?oc=${o.numero}`} className="inline-flex h-9 items-center rounded-full bg-neutro-suave px-3.5 text-sm font-medium hover:bg-hover">OC {String(o.numero)} · {String(o.proveedor ?? "—")} · faltan {new Intl.NumberFormat("es-CO").format(Number(o.pendiente))}</Link></li>)}
+            </ul>
+          </div>
+        ) : null}
       </Tarjeta>
       <Tarjeta>
         <div className="border-b border-linea p-4"><h2 className="text-base font-semibold">Recepciones recientes</h2></div>

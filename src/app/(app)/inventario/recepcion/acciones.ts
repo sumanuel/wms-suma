@@ -1,12 +1,11 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { requerirPermisoAccion } from "@/lib/dal";
 import { registrarCambio } from "@/lib/auditoria";
 import { ErrorDeNegocio } from "@/lib/inventario/calidad";
 import { almacenar, recibir, type LineaRecepcion } from "@/lib/recepcion/servicio";
 
-export type EstadoRecepcion = { error?: string; resultado?: { documento: string; desde: number; hasta: number; cajas: number; unidades: number; ubicacion: string; lotesNuevos: number } };
+export type EstadoRecepcion = { error?: string; resultado?: { ordenCompleta?: boolean; documento: string; desde: number; hasta: number; cajas: number; unidades: number; ubicacion: string; lotesNuevos: number } };
 const numero = (v: unknown) => { const t = String(v ?? "").trim(); if (t === "") return NaN; const n = t.includes(",") ? t.replace(/\./g, "").replace(",", ".") : t; return Number(n); };
 
 export async function registrarRecepcion(_p: EstadoRecepcion, form: FormData): Promise<EstadoRecepcion> {
@@ -23,9 +22,8 @@ export async function registrarRecepcion(_p: EstadoRecepcion, form: FormData): P
     lineas.push({ ean, lote, vence: vence || null, cajas: numero(cajasT), cantidad: numero(cantT) });
   }
   try {
-    const r = await recibir(db, { bodega: String(form.get("bodega") ?? ""), documento: String(form.get("documento") ?? ""), nit: String(form.get("nit") ?? "") || null, estado: String(form.get("estado") ?? ""), lineas });
+    const r = await recibir(db, { bodega: String(form.get("bodega") ?? ""), documento: String(form.get("documento") ?? ""), nit: String(form.get("nit") ?? "") || null, estado: String(form.get("estado") ?? ""), lineas, orden: /^\d+$/.test(String(form.get("orden") ?? "")) ? Number(form.get("orden")) : null });
     await registrarCambio(db, { usuarioId: usuario.id, entidad: "recepcion", entidadId: r.documento, accion: "crear", despues: { cajas: r.cajas, unidades: r.unidades, desde: r.desde, hasta: r.hasta, ubicacion: r.ubicacion } });
-    revalidatePath("/inventario", "layout");
     return { resultado: r };
   } catch (e) {
     if (e instanceof ErrorDeNegocio) return { error: e.message };
