@@ -4,7 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Aviso, claseControl, clasesBoton } from "@/components/ui";
 
-export type CampoEscaner = { name: string; etiqueta: string; inputMode?: "numeric" | "decimal" | "text"; defaultValue?: string; conservar?: boolean; opciones?: string[]; ayuda?: string };
+export type CampoEscaner = { name: string; etiqueta: string; inputMode?: "numeric" | "decimal" | "text"; defaultValue?: string; conservar?: boolean; opciones?: string[]; ayuda?: string; opcional?: boolean };
 
 // Formulario para lector de códigos: el lector escribe y manda Enter. Enter en un campo pasa al siguiente y en el último envía.
 // Tras un envío correcto se vacían los campos (menos los marcados «conservar») y el foco vuelve al primero que quedó vacío.
@@ -45,7 +45,7 @@ export function Escaner({ campos, accion, boton, refrescar = true }: { campos: C
           ) : (
             <input
               id={`m-${c.name}`} name={c.name} inputMode={c.inputMode ?? "text"} autoComplete="off" autoCapitalize="characters" enterKeyHint={i === campos.length - 1 ? "done" : "next"}
-              autoFocus={i === 0} required value={valores[c.name]} onChange={(e) => setValores({ ...valores, [c.name]: e.target.value })} ref={(el) => { refs.current[c.name] = el; }}
+              autoFocus={i === 0} required={!c.opcional} value={valores[c.name]} onChange={(e) => setValores({ ...valores, [c.name]: e.target.value })} ref={(el) => { refs.current[c.name] = el; }}
               onKeyDown={(e) => {
                 if (e.key !== "Enter") return;
                 e.preventDefault();

@@ -8,6 +8,7 @@ import { ErrorDeNegocio } from "@/lib/inventario/calidad";
 import { registrarCantidades } from "@/lib/conteo/servicio";
 import { reubicarCaja } from "@/lib/movil/servicio";
 import { completarTarea } from "@/lib/resurtido/servicio";
+import { recibir } from "@/lib/recepcion/servicio";
 
 export type Resultado = { error?: string; aviso?: string };
 
@@ -98,6 +99,28 @@ export async function resurtirCaja(tarea: number, _p: Resultado, form: FormData)
     const r = await completarTarea(db, tarea, usuario.id, caja);
     await registrarCambio(db, { usuarioId: usuario.id, entidad: "resurtido_tarea", entidadId: String(tarea), accion: "editar", despues: { estado: "hecha", caja: r.caja, desde: r.desde, hasta: r.hasta, origen: "terminal móvil" } });
     return { aviso: `Caja ${r.caja} → ${r.hasta}.` };
+  } catch (e) {
+    return falla(e);
+  }
+}
+
+/** Recepción contra una orden de compra desde el lector: se lee el artículo y se indican lote, vencimiento, cajas y cantidad por caja. */
+export async function recibirMovil(orden: number, _p: Resultado, form: FormData): Promise<Resultado> {
+  const { db, usuario } = await requerirPermisoAccion("inventario", "crear");
+  const ean = String(form.get("ean") ?? "").trim();
+  const lote = String(form.get("lote") ?? "").trim();
+  const vence = String(form.get("vence") ?? "").trim();
+  const cajas = decimal(form.get("cajas"));
+  const cantidad = decimal(form.get("cantidad"));
+  if (!Number.isInteger(cajas)) return { error: "El número de cajas debe ser un entero." };
+  try {
+    const b = await db.$queryRaw<{ bodega: string | null }[]>`SELECT DISTINCT bodega FROM t_detalle_orden_compra WHERE nordencompra = ${orden} AND eanproveedores = ${ean}`;
+    if (!b[0]?.bodega) return { error: `El artículo ${ean} no está en la orden ${orden}.` };
+    const cfg = await db.configuracion.findUnique({ where: { clave: "recepcion.calidad_inicial" } });
+    const estado = cfg && typeof cfg.valor === "object" && cfg.valor && typeof (cfg.valor as { estado?: unknown }).estado === "string" ? String((cfg.valor as { estado: string }).estado) : "Cuarentena";
+    const r = await recibir(db, { bodega: b[0].bodega, documento: "", nit: null, estado, lineas: [{ ean, lote, vence: vence || null, cajas, cantidad }], orden });
+    await registrarCambio(db, { usuarioId: usuario.id, entidad: "recepcion", entidadId: r.documento, accion: "crear", despues: { cajas: r.cajas, unidades: r.unidades, desde: r.desde, hasta: r.hasta, origen: "terminal móvil" } });
+    return { aviso: `${r.cajas} caja${r.cajas === 1 ? "" : "s"} (${r.desde}–${r.hasta}) en ${r.ubicacion}.${r.ordenCompleta ? " La orden quedó completa." : ""}` };
   } catch (e) {
     return falla(e);
   }
