@@ -7,7 +7,7 @@ import { listarAjustes, type Fila, type Orden } from "@/lib/inventario/ajustes";
 import { normalizar } from "@/lib/maestros/tipos";
 import type { Busqueda, Definicion } from "@/lib/listados";
 
-const ORIGEN = { manual: { t: "Manual", tono: "marca" }, conteo: { t: "Conteo", tono: "neutro" }, carga: { t: "Carga inicial", tono: "aviso" }, otro: { t: "Otro", tono: "neutro" } } as const;
+const ORIGEN = { manual: { t: "Manual", tono: "marca" }, anulacion: { t: "Anulación", tono: "error" }, conteo: { t: "Conteo", tono: "neutro" }, carga: { t: "Carga inicial", tono: "aviso" }, otro: { t: "Otro", tono: "neutro" } } as const;
 
 export default async function Ajustes({ searchParams }: { searchParams: Promise<Busqueda> }) {
   const { db } = await requerirPermiso("inventario", "editar");
@@ -29,6 +29,7 @@ export default async function Ajustes({ searchParams }: { searchParams: Promise<
     orden: { columna: "fecha", dir: "desc" },
     soloLectura: true,
     claveFila: (f) => String(f.id),
+    enlace: (f) => `/inventario/ajustes/${f.id}`,
     columnas: [
       v("fecha", "Fecha", { fija: true, formato: "fechaHora" }),
       v("caja", "Caja", { valor: (f: Fila) => String(f.caja) }),
@@ -38,7 +39,7 @@ export default async function Ajustes({ searchParams }: { searchParams: Promise<
       v("entrada", "Entrada", { alinear: "derecha" }),
       v("salida", "Salida", { alinear: "derecha" }),
       v("despues", "Saldo después", { alinear: "derecha", ordenar: undefined }),
-      v("origen", "Origen", { ordenar: undefined, valor: (f: Fila) => ORIGEN[f.origen as keyof typeof ORIGEN]?.t ?? "Otro", celda: (f: Fila) => { const o = ORIGEN[f.origen as keyof typeof ORIGEN] ?? ORIGEN.otro; return <Etiqueta tono={o.tono}>{o.t}</Etiqueta>; } }),
+      v("origen", "Origen", { ordenar: undefined, valor: (f: Fila) => ORIGEN[f.origen as keyof typeof ORIGEN]?.t ?? "Otro", celda: (f: Fila) => { const o = ORIGEN[f.origen as keyof typeof ORIGEN] ?? ORIGEN.otro; return <span className="flex gap-1.5"><Etiqueta tono={o.tono}>{o.t}</Etiqueta>{f.anulado ? <Etiqueta tono="neutro">Anulado</Etiqueta> : null}</span>; } }),
       v("motivo", "Motivo", { ordenar: undefined }),
       v("soporte", "Documento", { ordenar: undefined, oculta: true }),
     ],
@@ -46,6 +47,9 @@ export default async function Ajustes({ searchParams }: { searchParams: Promise<
   };
   return (
     <div className="flex flex-col gap-4">
+      {busqueda.aviso === "solicitado" ? <Aviso tono="aviso">El ajuste supera el umbral de aprobación: quedó como solicitud pendiente y un aprobador debe resolverla.</Aviso> : null}
+      {busqueda.aviso === "anulado" ? <Aviso tono="exito">Se anuló el ajuste con otro ajuste contrario y el saldo de la caja volvió a lo de antes.</Aviso> : null}
+      {busqueda.aviso === "bloque" ? <Aviso tono="exito">Se aplicaron los ajustes de la planilla.</Aviso> : null}
       {busqueda.aviso === "creado" ? <Aviso tono="exito">Se registró el ajuste y el saldo de la caja quedó corregido.</Aviso> : null}
       <Listado
         definicion={definicion}

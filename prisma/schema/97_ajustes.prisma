@@ -1,0 +1,27 @@
+/// Solicitudes de ajuste de inventario que esperan aprobación (propio del WMS web: no existía en el sistema anterior).
+/// Un ajuste manual cuya diferencia supera el umbral configurado, hecho por quien no puede aprobar, queda aquí hasta que un aprobador lo resuelva.
+model AjusteSolicitud {
+  id                Int       @id @default(autoincrement())
+  caja              Float
+  ean               String    @db.VarChar(50)
+  bodega            String    @db.VarChar(15)
+  modo              String    @db.VarChar(10)
+  cantidad          Decimal   @db.Decimal(18, 4)
+  motivo            String    @db.VarChar(50)
+  detalle           String?   @db.VarChar(400)
+  soporte           String?   @db.VarChar(50)
+  saldo_solicitado  Decimal   @db.Decimal(18, 4)
+  diferencia        Decimal   @db.Decimal(18, 4)
+  estado            String    @default("pendiente") @db.VarChar(12)
+  solicitado_por    String?   @db.VarChar(40)
+  solicitado_nombre String?   @db.VarChar(120)
+  fecha_solicitud   DateTime  @default(now()) @db.Timestamptz(6)
+  resuelto_por      String?   @db.VarChar(40)
+  resuelto_nombre   String?   @db.VarChar(120)
+  fecha_resolucion  DateTime? @db.Timestamptz(6)
+  nota_resolucion   String?   @db.VarChar(300)
+  ajuste_id         Int?
+
+  @@index([estado])
+  @@map("ajuste_solicitud")
+}

@@ -1,8 +1,9 @@
 "use server";
 
-import { requerirPermisoAccion } from "@/lib/dal";
+import { requerirPermisoAccion, tienePermiso } from "@/lib/dal";
 import { registrarCambio } from "@/lib/auditoria";
-import { ajustarCaja, buscarCaja } from "@/lib/inventario/ajustes";
+import { ajustarCaja, buscarCaja, simularAjuste, type DatosAjuste } from "@/lib/inventario/ajustes";
+import { leerUmbral, requiereAprobacion, solicitarAjuste } from "@/lib/inventario/aprobacion";
 import { ErrorDeNegocio } from "@/lib/inventario/calidad";
 import { registrarCantidades } from "@/lib/conteo/servicio";
 import { reubicarCaja } from "@/lib/movil/servicio";
@@ -54,7 +55,8 @@ export async function contarCaja(conteo: number, _p: Resultado, form: FormData):
 }
 
 export async function ajustarMovil(_p: Resultado, form: FormData): Promise<Resultado> {
-  const { db, usuario } = await requerirPermisoAccion("inventario", "editar");
+  const ctx = await requerirPermisoAccion("inventario", "editar");
+  const { db, usuario } = ctx;
   const caja = entero(form.get("caja"));
   const cantidad = decimal(form.get("cantidad"));
   const motivo = String(form.get("motivo") ?? "");
@@ -64,7 +66,17 @@ export async function ajustarMovil(_p: Resultado, form: FormData): Promise<Resul
     const c = await buscarCaja(db, caja);
     if (c.length === 0) return { error: `La caja ${caja} no existe en el inventario.` };
     if (c.length > 1) return { error: `Hay ${c.length} cajas con el número ${caja}: ajústala desde el escritorio.` };
-    const r = await ajustarCaja(db, { caja, ean: c[0].ean, bodega: c[0].bodega, modo: "fijar", cantidad, motivo: motivo as never, detalle: "Terminal móvil", soporte: null });
+    const datos: DatosAjuste = { caja, ean: c[0].ean, bodega: c[0].bodega, modo: "fijar", cantidad, motivo: motivo as never, detalle: "Terminal móvil", soporte: null };
+    const umbral = await leerUmbral(db);
+    if (umbral > 0 && !tienePermiso(ctx, "inventario", "eliminar")) {
+      const sim = await simularAjuste(db, datos);
+      if (requiereAprobacion(umbral, sim.diferencia, false)) {
+        const s = await solicitarAjuste(db, datos, { id: usuario.id, nombre: usuario.nombre });
+        await registrarCambio(db, { usuarioId: usuario.id, entidad: "ajuste_solicitud", entidadId: String(s.id), accion: "crear", despues: { caja, diferencia: s.diferencia, motivo, origen: "terminal móvil" } });
+        return { aviso: `La diferencia (${s.diferencia}) supera el umbral: quedó como solicitud #${s.id} por aprobar.` };
+      }
+    }
+    const r = await ajustarCaja(db, datos);
     await registrarCambio(db, { usuarioId: usuario.id, entidad: "t_pic_ajuste", entidadId: `${caja}|${r.id}`, accion: "crear", antes: { saldo: r.antes }, despues: { saldo: r.despues, motivo: r.motivo, origen: "terminal móvil" } });
     return { aviso: `Caja ${caja}: ${r.antes} → ${r.despues}.` };
   } catch (e) {

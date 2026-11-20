@@ -1,9 +1,10 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { requerirPermisoAccion } from "@/lib/dal";
+import { requerirPermisoAccion, tienePermiso } from "@/lib/dal";
 import { registrarCambio } from "@/lib/auditoria";
-import { ajustarCaja, MODOS, MOTIVOS, type Modo, type Motivo } from "@/lib/inventario/ajustes";
+import { ajustarCaja, MODOS, MOTIVOS, simularAjuste, type DatosAjuste, type Modo, type Motivo } from "@/lib/inventario/ajustes";
+import { leerUmbral, requiereAprobacion, solicitarAjuste } from "@/lib/inventario/aprobacion";
 import { ErrorDeNegocio } from "@/lib/inventario/calidad";
 
 export type EstadoAjuste = { error?: string };
@@ -17,7 +18,8 @@ function numero(v: FormDataEntryValue | null) {
 }
 
 export async function ajustar(_previo: EstadoAjuste, form: FormData): Promise<EstadoAjuste> {
-  const { db, usuario } = await requerirPermisoAccion("inventario", "editar");
+  const ctx = await requerirPermisoAccion("inventario", "editar");
+  const { db, usuario } = ctx;
   const caja = numero(form.get("caja"));
   const ean = String(form.get("ean") ?? "");
   const bodega = String(form.get("bodega") ?? "");
@@ -29,6 +31,16 @@ export async function ajustar(_previo: EstadoAjuste, form: FormData): Promise<Es
   if (!(MOTIVOS as readonly string[]).includes(motivo)) return { error: "Elige un motivo de la lista." };
   if (!Number.isFinite(cantidad)) return { error: "Escribe la cantidad (un número, cero o más)." };
   try {
+    const datos: DatosAjuste = { caja, ean, bodega, modo, cantidad, motivo, detalle: String(form.get("detalle") ?? "").trim() || null, soporte: String(form.get("soporte") ?? "").trim() || null };
+    const umbral = await leerUmbral(db);
+    if (umbral > 0 && !tienePermiso(ctx, "inventario", "eliminar")) {
+      const sim = await simularAjuste(db, datos);
+      if (requiereAprobacion(umbral, sim.diferencia, false)) {
+        const s = await solicitarAjuste(db, datos, { id: usuario.id, nombre: usuario.nombre });
+        await registrarCambio(db, { usuarioId: usuario.id, entidad: "ajuste_solicitud", entidadId: String(s.id), accion: "crear", despues: { caja, diferencia: s.diferencia, motivo } });
+        redirect("/inventario/ajustes?aviso=solicitado");
+      }
+    }
     const r = await ajustarCaja(db, { caja, ean, bodega, modo, cantidad, motivo, detalle: String(form.get("detalle") ?? "").trim() || null, soporte: String(form.get("soporte") ?? "").trim() || null });
     await registrarCambio(db, { usuarioId: usuario.id, entidad: "t_pic_ajuste", entidadId: `${caja}|${r.id}`, accion: "crear", antes: { saldo: r.antes }, despues: { saldo: r.despues, diferencia: r.diferencia, motivo: r.motivo } });
   } catch (e) {

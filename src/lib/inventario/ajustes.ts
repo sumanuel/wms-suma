@@ -33,13 +33,36 @@ export async function buscarCaja(db: Db, numero: number): Promise<CajaAjustable[
 
 export type DatosAjuste = { caja: number; ean: string; bodega: string; modo: Modo; cantidad: number; motivo: Motivo; detalle: string | null; soporte: string | null };
 
-export async function ajustarCaja(db: Db, d: DatosAjuste) {
+export function validarAjuste(d: DatosAjuste) {
   if (!(MOTIVOS as readonly string[]).includes(d.motivo)) throw new ErrorDeNegocio("Elige un motivo de la lista.");
   if (d.motivo === "Otro" && !d.detalle?.trim()) throw new ErrorDeNegocio("Con el motivo «Otro» explica qué pasó en el detalle.");
   if (!Number.isFinite(d.cantidad) || d.cantidad < 0 || d.cantidad > 1e9) throw new ErrorDeNegocio("La cantidad debe ser un número, cero o más.");
   if (d.modo !== "fijar" && d.cantidad === 0) throw new ErrorDeNegocio("La cantidad a sumar o restar debe ser mayor que cero.");
+}
 
-  return db.$transaction(async (tx) => {
+export async function ajustarCaja(db: Db, d: DatosAjuste) {
+  validarAjuste(d);
+  return db.$transaction((tx) => ajustarCajaTx(tx, d));
+}
+
+/** Texto del motivo de un ajuste manual: «Ajuste manual · Motivo: detalle». */
+export const textoMotivo = (d: Pick<DatosAjuste, "motivo" | "detalle">) => `${PREFIJO_MANUAL} · ${d.motivo}${d.detalle?.trim() ? `: ${d.detalle.trim()}` : ""}`.slice(0, 500);
+
+/** Calcula el saldo resultante sin tocar nada (para decidir si necesita aprobación y para revisar planillas). */
+export async function simularAjuste(db: Db | Prisma.TransactionClient, d: DatosAjuste) {
+  const f = await db.$queryRaw<{ entradas: Prisma.Decimal | null; salidas: Prisma.Decimal | null; reserva: Prisma.Decimal | null }[]>`
+    SELECT entradas, salidas, reserva FROM t_pic WHERE cajap = ${d.caja} AND cod_producto = ${d.ean} AND bodepicking = ${d.bodega}`;
+  const c = f[0];
+  if (!c) throw new ErrorDeNegocio("La caja ya no existe en el inventario.");
+  const saldo = r4(Number(c.entradas ?? 0) - Number(c.salidas ?? 0));
+  const nuevo = r4(d.modo === "fijar" ? d.cantidad : d.modo === "sumar" ? saldo + d.cantidad : saldo - d.cantidad);
+  return { saldo, nuevo, diferencia: r4(nuevo - saldo), reservado: Number(c.reserva ?? 0) };
+}
+
+/** Aplica el ajuste dentro de una transacción ya abierta (la usan el ajuste suelto, la aprobación y el ajuste en bloque). */
+export async function ajustarCajaTx(tx: Prisma.TransactionClient, d: DatosAjuste, motivoTexto?: string, soportePropio?: string | null) {
+  validarAjuste(d);
+  {
     const f = await tx.$queryRaw<{ entradas: Prisma.Decimal | null; salidas: Prisma.Decimal | null; reserva: Prisma.Decimal | null; lote: string; ubicacion: string | null }[]>`
       SELECT entradas, salidas, reserva, lote, ubicacion FROM t_pic WHERE cajap = ${d.caja} AND cod_producto = ${d.ean} AND bodepicking = ${d.bodega} FOR UPDATE`;
     const c = f[0];
@@ -64,15 +87,15 @@ export async function ajustarCaja(db: Db, d: DatosAjuste) {
         if ((quedan[0]?.n ?? 0) === 0) await tx.insCoordenadas.updateMany({ where: { ubicacion: c.ubicacion }, data: { ocupacion: 0 } });
       }
     }
-    const motivo = `${PREFIJO_MANUAL} · ${d.motivo}${d.detalle?.trim() ? `: ${d.detalle.trim()}` : ""}`.slice(0, 500);
+    const motivo = motivoTexto ?? textoMotivo(d);
     const ajuste = await tx.picAjuste.create({
       data: {
         caja: d.caja, fecha: new Date(), saldoinicial: saldo, qtyentrada: dif > 0 ? dif : 0, qtysale: dif < 0 ? -dif : 0, motivoajuste: motivo, loteproveedor: c.lote.slice(0, 20),
-        numdocumento: d.soporte?.trim().slice(0, 50) || null, ubicacion_sale: c.ubicacion?.slice(0, 20) ?? null,
+        numdocumento: (soportePropio !== undefined ? soportePropio : d.soporte?.trim().slice(0, 50)) || null, ubicacion_sale: c.ubicacion?.slice(0, 20) ?? null,
       },
     });
     return { id: ajuste.id, antes: saldo, despues: nuevo, diferencia: dif, motivo };
-  });
+  }
 }
 
 // ── Lista ─────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -89,7 +112,7 @@ export async function listarAjustes(db: Db, q: PedidoConsulta) {
     const p = `%${q.texto.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
     cond.push(Prisma.sql`(a.caja::text ILIKE ${p} OR a.loteproveedor ILIKE ${p} OR a.motivoajuste ILIKE ${p} OR a.numdocumento ILIKE ${p} OR d.descripcion ILIKE ${p} OR er.producto ILIKE ${p})`);
   }
-  const origen = Prisma.sql`(CASE WHEN a.motivoajuste LIKE ${`${PREFIJO_MANUAL}%`} THEN 'manual' WHEN a.motivoajuste LIKE 'Conteo%' THEN 'conteo' WHEN a.motivoajuste LIKE 'Carga de inventario%' THEN 'carga' ELSE 'otro' END)`;
+  const origen = Prisma.sql`(CASE WHEN a.motivoajuste LIKE ${`${PREFIJO_MANUAL}%`} THEN 'manual' WHEN a.motivoajuste LIKE 'Anulación del ajuste%' THEN 'anulacion' WHEN a.motivoajuste LIKE 'Conteo%' THEN 'conteo' WHEN a.motivoajuste LIKE 'Carga de inventario%' THEN 'carga' ELSE 'otro' END)`;
   if (q.filtros.origen) cond.push(Prisma.sql`${origen} = ${q.filtros.origen}`);
   if (q.filtros.sentido === "entrada") cond.push(Prisma.sql`COALESCE(a.qtyentrada, 0) > 0`);
   if (q.filtros.sentido === "salida") cond.push(Prisma.sql`COALESCE(a.qtysale, 0) > 0`);
@@ -100,7 +123,8 @@ export async function listarAjustes(db: Db, q: PedidoConsulta) {
     db.$queryRaw<Fila[]>`
       SELECT a.id, a.fecha, a.caja, er.producto AS ean, d.descripcion AS articulo, a.loteproveedor AS lote, a.ubicacion_sale AS ubicacion, a.saldoinicial AS antes,
              COALESCE(a.qtyentrada, 0) AS entrada, COALESCE(a.qtysale, 0) AS salida, (COALESCE(a.saldoinicial, 0) + COALESCE(a.qtyentrada, 0) - COALESCE(a.qtysale, 0)) AS despues,
-             ${origen} AS origen, a.motivoajuste AS motivo, a.numdocumento AS soporte
+             ${origen} AS origen, a.motivoajuste AS motivo, a.numdocumento AS soporte,
+             EXISTS (SELECT 1 FROM t_pic_ajuste x WHERE x.motivoajuste LIKE 'Anulación del ajuste #' || a.id::text || ':%') AS anulado
       ${desde} ${donde} ORDER BY ${orden}, a.id DESC LIMIT ${q.cantidad} OFFSET ${q.salto}`,
     db.$queryRaw<{ n: number }[]>`SELECT COUNT(*)::int AS n ${desde} ${donde}`,
   ]);
