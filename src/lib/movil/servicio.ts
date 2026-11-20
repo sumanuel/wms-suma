@@ -71,10 +71,17 @@ export async function consultar(db: Db, texto: string, tipo: TipoBusqueda): Prom
 
 /** Lleva una caja a otra ubicación (como «Ubicar caja» del lector). La saca del pallet si estaba en uno. */
 export async function reubicarCaja(db: Db, caja: number, ubicacion: string, transaccion = "UBICAR CAJA") {
+  if (!Number.isInteger(caja) || caja <= 0) throw new ErrorDeNegocio("Lee o escribe el número de la caja.");
+  if (!ubicacion.trim()) throw new ErrorDeNegocio("Lee o escribe la ubicación de destino.");
+  return db.$transaction((tx) => reubicarCajaTx(tx, caja, ubicacion, transaccion));
+}
+
+/** La misma reubicación dentro de una transacción ya abierta (la usa el resurtido para mover y cerrar la tarea juntos). */
+export async function reubicarCajaTx(tx: Prisma.TransactionClient, caja: number, ubicacion: string, transaccion = "UBICAR CAJA") {
   const ub = ubicacion.trim();
   if (!Number.isInteger(caja) || caja <= 0) throw new ErrorDeNegocio("Lee o escribe el número de la caja.");
   if (!ub) throw new ErrorDeNegocio("Lee o escribe la ubicación de destino.");
-  return db.$transaction(async (tx) => {
+  {
     const c = await tx.$queryRaw<{ ean: string; lote: string; bodega: string; ubicacion: string | null; saldo: Prisma.Decimal }[]>`
       SELECT cod_producto AS ean, lote, bodepicking AS bodega, ubicacion, (entradas - salidas) AS saldo FROM t_pic WHERE cajap = ${caja} FOR UPDATE`;
     const cx = c[0];
@@ -100,9 +107,8 @@ export async function reubicarCaja(db: Db, caja: number, ubicacion: string, tran
       if ((quedan[0]?.n ?? 0) === 0) await tx.$executeRaw`UPDATE t_ins_coordenadas SET ocupacion = 0 WHERE ubicacion = ${cx.ubicacion}`;
     }
     return { desde: cx.ubicacion, hasta: destino, saldo: Number(cx.saldo) };
-  });
+  }
 }
-
 export async function pickingsPendientes(db: Db) {
   return db.$queryRaw<Fila[]>`
     SELECT ep.idmovimiento AS id, ep.npedid AS pedido, ep.bodegapicking AS bodega, ep.fecha, COUNT(d.iddetpripack)::int AS lineas,

@@ -7,6 +7,7 @@ import { leerUmbral, requiereAprobacion, solicitarAjuste } from "@/lib/inventari
 import { ErrorDeNegocio } from "@/lib/inventario/calidad";
 import { registrarCantidades } from "@/lib/conteo/servicio";
 import { reubicarCaja } from "@/lib/movil/servicio";
+import { completarTarea } from "@/lib/resurtido/servicio";
 
 export type Resultado = { error?: string; aviso?: string };
 
@@ -79,6 +80,24 @@ export async function ajustarMovil(_p: Resultado, form: FormData): Promise<Resul
     const r = await ajustarCaja(db, datos);
     await registrarCambio(db, { usuarioId: usuario.id, entidad: "t_pic_ajuste", entidadId: `${caja}|${r.id}`, accion: "crear", antes: { saldo: r.antes }, despues: { saldo: r.despues, motivo: r.motivo, origen: "terminal móvil" } });
     return { aviso: `Caja ${caja}: ${r.antes} → ${r.despues}.` };
+  } catch (e) {
+    return falla(e);
+  }
+}
+
+/** Resurtido desde el lector: se lee la caja de la tarea y la ubicación de picking donde queda. */
+export async function resurtirCaja(tarea: number, _p: Resultado, form: FormData): Promise<Resultado> {
+  const { db, usuario } = await requerirPermisoAccion("inventario", "editar");
+  const caja = entero(form.get("caja"));
+  const ub = String(form.get("ubicacion") ?? "").trim();
+  if (!Number.isFinite(caja)) return { error: "Lee o escribe el número de la caja." };
+  try {
+    const t = await db.resurtidoTarea.findUnique({ where: { id: tarea } });
+    if (!t || t.estado !== "pendiente") return { error: "La tarea ya fue resuelta o no existe." };
+    if (ub.toUpperCase() !== t.ubicacion_destino.toUpperCase()) return { error: `La ubicación correcta es ${t.ubicacion_destino}, no ${ub || "la leída"}.` };
+    const r = await completarTarea(db, tarea, usuario.id, caja);
+    await registrarCambio(db, { usuarioId: usuario.id, entidad: "resurtido_tarea", entidadId: String(tarea), accion: "editar", despues: { estado: "hecha", caja: r.caja, desde: r.desde, hasta: r.hasta, origen: "terminal móvil" } });
+    return { aviso: `Caja ${r.caja} → ${r.hasta}.` };
   } catch (e) {
     return falla(e);
   }
