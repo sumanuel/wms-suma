@@ -1,0 +1,202 @@
+// GENERADO por scripts/legado/convertir_tablas.py desde el DDL de CO_DLL_BASE. No editar a mano: edite el conversor
+// o muévase a un modelo propio cuando el módulo se rediseñe. Los campos se llaman como la columna (snake_case).
+
+
+/// Legado: [dbo].[TA_Facturacion]
+model Facturacion {
+  nfact                        Int @id
+  npedido                      String? @db.VarChar(50)
+  fechafactura                 DateTime? @db.Timestamp(3)
+  clientefactura               Int?
+  retenciones                  Float? @default(0)
+  cia                          String? @db.VarChar(10)
+  nremision                    Int?
+  pesobruto                    Float?
+  pesoneto                     Float?
+  ncajas                       Int?
+  observaciones                String? @db.VarChar(1000)
+  listapre                     Int?
+  numero                       Int @default(autoincrement())
+  bodegaf                      String? @db.VarChar(15)
+  cargada                      Int? @default(0)
+  tipodoc                      String? @db.VarChar(4)
+  observanulado                String? @db.Text
+  picking                      Int?
+  exportado                    Int? @default(0)
+  flete                        Float?
+  efsd                         Boolean? @default(false)
+  consecutivo                  Float? @default(63)
+  vlfra                        Float?
+  iva                          Float?
+  retefuente                   Float?
+  reteiva                      Float?
+  reteica                      Float?
+  neto                         Float?
+  anulada                      Int? @default(0)
+  tasacambio                   Decimal? @db.Decimal(8, 2) @default(1)
+  caja1                        Int?
+  caja2                        Int?
+  transportador                String? @db.VarChar(50)
+  completo                     Int?
+  parcial                      Int?
+  despachador                  String? @db.VarChar(50)
+  despacho                     Int? @default(0)
+  seguro                       Float? @default(0)
+  plazo                        Int? @default(0)
+  tarifadeimpuesto             String? @db.VarChar(20)
+  volumen                      Float?
+  iddescuentonit               Int?
+  hijos_t_serie_pedido_nueva_2 SeriePedidoNueva[] @relation("fk_t_serie_pedido_nueva_ta_facturacion")
+  @@map("ta_facturacion")
+}
+
+/// Legado: [dbo].[T_facturacion_Ppal]
+model FacturacionPpal {
+  num_factura                  String @id @db.VarChar(50)
+  retencion                    Int? @default(0)
+  vlfactura                    Int? @default(0)
+  flete                        Int? @default(0)
+  iva                          Int? @default(0)
+  abono                        Int? @default(0)
+  fecha_factura                DateTime? @db.Timestamp(3)
+  nitcliente                   String? @db.VarChar(15)
+  num_pedido                   String? @db.VarChar(50)
+  descuento                    Int?
+  dctonocomercial              Int?
+  notas                        Int?
+  otr1                         Int?
+  otr2                         Int?
+  unidades                     Int?
+  notainteres                  Boolean? @default(false)
+  tipodocumento                String? @db.VarChar(4)
+  nvariable                    Int?
+  vendedor                     String? @db.VarChar(50)
+  plazo                        Int?
+  anula                        Int? @default(0)
+  observaciones                String? @db.VarChar(355)
+  fechavence                   DateTime? @db.Timestamp(3)
+  vmonedaini                   Float?
+  factorini                    Float? @default(1)
+  money                        String? @db.VarChar(3)
+  typopago                     String? @db.VarChar(3)
+  factorvble                   Float?
+  estado                       String? @db.VarChar(20)
+  efsd                         Boolean? @default(false)
+  fecha_pago                   DateTime? @db.Timestamp(3)
+  valor_pago_aux               Int?
+  descrip_pago_aux             String? @db.Text
+  cheque_post_fe               Boolean? @default(false)
+  problema                     Int?
+  fecha_reporte                DateTime? @db.Timestamp(3)
+  orden                        Int?
+  costomercvend                Decimal? @db.Decimal(19, 4) @default(0)
+  costoinvent                  Decimal? @db.Decimal(19, 4) @default(0)
+  ajustexinflac                Decimal? @db.Decimal(19, 4) @default(0)
+  reteiva                      Decimal? @db.Decimal(19, 4) @default(0)
+  reteica                      Decimal? @db.Decimal(19, 4) @default(0)
+  neto                         Decimal? @db.Decimal(19, 4) @default(0)
+  sw                           Int? @default(0)
+  numfact                      Decimal? @db.Decimal(10, 0) @default(0)
+  seguro                       Float? @default(0)
+  rel_t_clientes_1             Clientes? @relation("fk_t_facturacion_ppal_t_clientes", fields: [nitcliente], references: [nit], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_facturacion_ppal_t_clientes")
+  rel_t_clientes_direcciones_2 ClientesDirecciones? @relation("fk_t_facturacion_ppal_t_clientes_direcciones", fields: [nvariable], references: [item], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_facturacion_ppal_t_clientes_direcciones")
+  @@map("t_facturacion_ppal")
+}
+
+/// Legado: [dbo].[T_Ins_DetallesDeImpuesto]
+model InsDetallesdeimpuesto {
+  codigodeimpuesto                String @id @db.VarChar(10)
+  descripcion                     String? @db.VarChar(150)
+  cuentapuc                       String? @db.VarChar(20)
+  porcimpuesto                    Decimal? @db.Decimal(8, 4)
+  montodeimpuesto                 Decimal? @db.Decimal(10, 2)
+  montominimo                     Decimal? @db.Decimal(10, 2)
+  prefijoimpuesto                 String? @db.Char(10)
+  isgrabable                      String? @db.Char(1)
+  hijos_t_ins_tarifasdeimpuesto_1 InsTarifasdeimpuesto[] @relation("fk_t_ins_tarifasdeimpuesto_t_ins_detallesdeimpuest")
+  @@map("t_ins_detallesdeimpuesto")
+}
+
+/// Legado: [dbo].[T_ins_Lista_Precio_PPal]
+model InsListaPrecioPpal {
+  refe                       String @db.VarChar(50)
+  lista                      Int
+  precio_de_venta            Float?
+  factor                     Float?
+  referencia                 String? @db.VarChar(50)
+  moneda                     String? @db.VarChar(3)
+  descuento1                 Float?
+  idlistapre                 Int @default(autoincrement())
+  descripcion                String? @db.VarChar(150)
+  margenupgrate              Float? @default(0)
+  codarancel                 Int? @db.SmallInt
+  nomlista                   String? @db.VarChar(50)
+  rel_t_detalle_referencia_1 DetalleReferencia @relation("fk_t_ins_lista_precio_ppal_t_detalle_referencia", fields: [refe], references: [productoean], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_ins_lista_precio_ppal_t_detalle_referencia")
+
+  @@id([refe, lista])
+  @@map("t_ins_lista_precio_ppal")
+}
+
+/// Legado: [dbo].[T_Ins_TarifasDeImpuesto]
+model InsTarifasdeimpuesto {
+  codigotarifa                   String? @db.VarChar(10)
+  descripcion                    String? @db.VarChar(100)
+  grupodeimpuesto                String? @db.VarChar(50)
+  codigodeimpuesto               String? @db.VarChar(10)
+  id                             Int @id @default(autoincrement())
+  rel_t_ins_detallesdeimpuesto_1 InsDetallesdeimpuesto? @relation("fk_t_ins_tarifasdeimpuesto_t_ins_detallesdeimpuest", fields: [codigodeimpuesto], references: [codigodeimpuesto], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_ins_tarifasdeimpuesto_t_ins_detallesdeimpuesto")
+  @@unique([codigotarifa, codigodeimpuesto])
+  @@map("t_ins_tarifasdeimpuesto")
+}
+
+/// Legado: [dbo].[T_ins_TRM]
+model InsTrm {
+  idtrm    Int @id @default(autoincrement())
+  fecha    DateTime? @db.Timestamp(3)
+  usuario  String? @db.VarChar(50)
+  moneda   String? @db.VarChar(50)
+  trm      Float?
+  isactiva Boolean?
+  @@map("t_ins_trm")
+}
+
+/// Legado: [dbo].[T_PanoramaContable]
+model Panoramacontable {
+  codigo             String @id @db.VarChar(10)
+  descripcion        String @db.Char(30)
+  inventario         String? @db.Char(8)
+  recepcion          String? @db.Char(8)
+  ajustecant         String? @db.Char(8)
+  ajustecosto        String? @db.Char(8)
+  variacioncosto     String? @db.Char(8)
+  variacioncant      String? @db.Char(8)
+  ventas_cxp         String? @db.Char(8)
+  costo              String? @db.Char(8)
+  devolucion         String? @db.Char(8)
+  comprobante        String? @db.VarChar(20)
+  cuentadescuentonif String? @db.VarChar(20)
+  garantiaestimada   Int?
+  @@map("t_panoramacontable")
+}
+
+/// Legado: [dbo].[T_plan_cuentas]
+model PlanCuentas {
+  numcuenta              String @id @db.VarChar(50)
+  descripcion            String? @db.VarChar(50)
+  tipo                   Int?
+  t2                     Int?
+  nivel                  String? @db.VarChar(10)
+  clasificadorcuenta     String? @db.VarChar(5)
+  cod_tipoctapuc         String? @db.VarChar(5)
+  porcentajeimpuesto     Decimal? @db.Decimal(18, 2)
+  isnormalocal           Boolean?
+  isnormanif             Boolean?
+  mvtomonedaextran       Boolean?
+  cuentautilidadoperdida String? @db.VarChar(20)
+  isfuente               Boolean?
+  codflujoefectivo       String? @db.VarChar(50)
+  formatomm              String? @db.VarChar(4)
+  conceptomm             String? @db.VarChar(4)
+  manejacartera          Boolean?
+  @@map("t_plan_cuentas")
+}

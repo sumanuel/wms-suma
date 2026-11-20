@@ -1,0 +1,140 @@
+// GENERADO por scripts/legado/convertir_tablas.py desde el DDL de CO_DLL_BASE. No editar a mano: edite el conversor
+// o muévase a un modelo propio cuando el módulo se rediseñe. Los campos se llaman como la columna (snake_case).
+
+
+/// Legado: [dbo].[T_Equivalencias_EAN]
+model EquivalenciasEan {
+  id              Int @id @default(autoincrement())
+  ean             String? @db.VarChar(30)
+  cantidad        Float?
+  ean_equivalente String? @db.VarChar(30)
+  activo          Boolean?
+  @@map("t_equivalencias_ean")
+}
+
+/// Legado: [dbo].[T_Historia_Status_Calidad]
+model HistoriaStatusCalidad {
+  id                                Int @id @default(autoincrement())
+  lote                              String @db.VarChar(20)
+  productoean                       String @db.VarChar(50)
+  fecha_registro                    DateTime? @db.Timestamp(3)
+  estado                            String? @db.VarChar(20)
+  id_usuario                        Int
+  saldo                             Decimal? @db.Decimal(16, 4)
+  rel_t_maestro_lote_pt_1           MaestroLotePt @relation("fk_t_historia_status_calidad_maestro_lote_pt", fields: [lote, productoean], references: [loteproveedor, codean], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_historia_status_calidad_maestro_lote_pt")
+  hijos_t_historia_status_rechazo_1 HistoriaStatusRechazo[] @relation("fk_t_historia_status_rechazo")
+  @@index([lote, productoean], map: "ix_t_historia_status_calidad_lote_productoean")
+  @@map("t_historia_status_calidad")
+}
+
+/// Legado: [dbo].[t_historia_status_rechazo]
+model HistoriaStatusRechazo {
+  id                              Int @id @default(autoincrement())
+  id_historia_status_calidad      Int
+  descripcion_status              String @db.VarChar(100)
+  fecha_libera_reproceso          DateTime? @db.Timestamp(3)
+  id_usuario_reproceso            Int?
+  descripcion_solucion            String? @db.VarChar(100)
+  id_lote                         String @db.VarChar(20)
+  codean                          String @db.VarChar(50)
+  fecha_reg_falla                 DateTime? @db.Timestamp(3)
+  rel_t_historia_status_calidad_1 HistoriaStatusCalidad @relation("fk_t_historia_status_rechazo", fields: [id_historia_status_calidad], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_historia_status_rechazo")
+  rel_t_maestro_lote_pt_2         MaestroLotePt @relation("fk_t_historia_status_rechazo_t_maestro_lote_pt", fields: [id_lote, codean], references: [loteproveedor, codean], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_historia_status_rechazo_t_maestro_lote_pt")
+  @@map("t_historia_status_rechazo")
+}
+
+/// Legado: [dbo].[T_Maestro_lote_PT]
+model MaestroLotePt {
+  idlote                            Int @default(autoincrement())
+  loteproveedor                     String @db.VarChar(20)
+  nitprov                           String @db.VarChar(50)
+  codean                            String @db.VarChar(50)
+  fechaingresa                      DateTime @db.Timestamp(3)
+  fechavence                        DateTime @db.Timestamp(3)
+  confirmacertif                    Int
+  pedproveedor                      String? @db.VarChar(50)
+  ord_no                            String? @db.VarChar(50)
+  numcontrolliberacion              String? @db.VarChar(20)
+  ord_no2                           String? @db.VarChar(50)
+  idciego                           Int?
+  hijos_t_entradas_ras_1            EntradasRas[] @relation("fk_t_entradas_ras_maestro_lote_pt")
+  hijos_t_historia_status_calidad_1 HistoriaStatusCalidad[] @relation("fk_t_historia_status_calidad_maestro_lote_pt")
+  hijos_t_historia_status_rechazo_2 HistoriaStatusRechazo[] @relation("fk_t_historia_status_rechazo_t_maestro_lote_pt")
+  hijos_t_vbles_logisticasxcaja_1   VblesLogisticasxcaja[] @relation("fk_t_vbles_logisticasxcaja")
+
+  @@id([loteproveedor, codean])
+  @@unique([idlote])
+  @@map("t_maestro_lote_pt")
+}
+
+/// Legado: [dbo].[T_pdto_TERMINADO]
+model PdtoTerminado {
+  bod                String @db.VarChar(15)
+  prodean            String @db.VarChar(50)
+  ref                String? @db.VarChar(50)
+  color              String? @db.VarChar(50)
+  talla              String? @db.VarChar(2)
+  ininicial          Float? @default(0)
+  etrpdn1a           Float? @default(0)
+  etrpdn2a           Int? @default(0)
+  entrdev            Int? @default(0)
+  salifact           Float? @default(0)
+  resernoconform     Float? @default(0)
+  reserconfirmada    Float? @default(0)
+  reservadopara      Int? @default(0)
+  consignacion       Int? @default(0)
+  planpdnenvia       Int? @default(0)
+  tarifadeimpuesto   String? @db.VarChar(10)
+  panoramacontable   String? @db.VarChar(10)
+  invmax             Float?
+  invmin             Float?
+  multiplocantidad   Float?
+  costopromajustado2 Float?
+
+  @@id([bod, prodean])
+  @@map("t_pdto_terminado")
+}
+
+/// Legado: [dbo].[T_Relacion_CodBarras]
+model RelacionCodbarras {
+  idinternoean      String @db.VarChar(30)
+  codbarrasasignado String @id @db.VarChar(50)
+  cantidad          Float?
+  qtynew            Decimal? @db.Decimal(14, 2)
+  fechacrea         DateTime? @db.Timestamp(3)
+  pesobruto         Decimal? @db.Decimal(14, 5)
+  qtytara           Decimal? @db.Decimal(14, 5)
+  cantidad_tara     Decimal? @db.Decimal(16, 4)
+  @@map("t_relacion_codbarras")
+}
+
+/// Legado: [dbo].[t_resumenStatusCalidad]
+model Resumenstatuscalidad {
+  id          Int @id @default(autoincrement())
+  fecha       DateTime? @db.Timestamp(3)
+  cajainicial Int?
+  cajafinal   Int?
+  estado      String? @db.VarChar(20)
+  aprueba     Int?
+  @@map("t_resumenstatuscalidad")
+}
+
+/// Legado: [dbo].[t_temp_paretto_rotacion] · clave sustituta wms_id
+model TempParettoRotacion {
+  wms_id BigInt @id @default(autoincrement())
+  id                 Int?
+  ean                String? @db.VarChar(50)
+  refpadre           String? @db.VarChar(50)
+  descripcion        String? @db.VarChar(200)
+  presentacion       String? @db.VarChar(10)
+  qtypedidosxperiodo Int?
+  presentacion2      String? @db.VarChar(50)
+  porcetajeitem      Decimal? @db.Decimal(14, 3)
+  acumulado          Decimal? @db.Decimal(14, 3)
+  qtypedida          Decimal? @db.Decimal(18, 5)
+  disponiblepick     Decimal? @db.Decimal(18, 5)
+  xraresurtir        Decimal? @db.Decimal(18, 5)
+  ubicaciones        String? @db.VarChar(500)
+  clasificacion      String? @db.VarChar(2)
+  @@map("t_temp_paretto_rotacion")
+}

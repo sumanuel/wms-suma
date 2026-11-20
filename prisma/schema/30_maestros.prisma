@@ -1,0 +1,454 @@
+// GENERADO por scripts/legado/convertir_tablas.py desde el DDL de CO_DLL_BASE. No editar a mano: edite el conversor
+// o muévase a un modelo propio cuando el módulo se rediseñe. Los campos se llaman como la columna (snake_case).
+
+
+/// Legado: [dbo].[T_clientes]
+model Clientes {
+  nit                            String @id @db.VarChar(15)
+  nombrecliente                  String? @db.VarChar(70)
+  nomcorto                       String? @db.VarChar(50)
+  telefono                       String? @db.VarChar(50)
+  tele2                          String? @db.VarChar(50)
+  tele3                          String? @db.VarChar(50)
+  celular                        String? @db.VarChar(50)
+  direccion                      String? @db.VarChar(200) @default("")
+  fax                            String? @db.VarChar(50) @default("")
+  ciudad                         String? @db.VarChar(50) @default("")
+  beeper                         String? @db.VarChar(50)
+  email                          String? @db.VarChar(70) @default("")
+  condicionesventa               Int?
+  cupoasignado                   Float?
+  vendedor                       String? @db.VarChar(50)
+  tipo_cliente                   String? @db.VarChar(100)
+  pais                           String? @db.VarChar(20)
+  canal                          String? @db.VarChar(100)
+  depto                          String? @db.VarChar(30)
+  activo                         Int? @default(0)
+  bloqueado                      Int? @default(0)
+  inactivo                       Int? @default(0)
+  pais_2                         String? @db.VarChar(20)
+  observaciones                  String? @db.Text
+  contacto1                      String? @db.VarChar(50)
+  cd1                            String? @db.VarChar(50)
+  telefono_contac1               String? @db.VarChar(50)
+  direccion_contac1              String? @db.VarChar(50)
+  email_contac1                  String? @db.VarChar(60)
+  contacto2                      String? @db.VarChar(50)
+  cd2                            String? @db.VarChar(50)
+  telefono_contac2               String? @db.VarChar(50)
+  direccion_contac2              String? @db.VarChar(50)
+  email_contac2                  String? @db.VarChar(60)
+  contacto3                      String? @db.VarChar(50)
+  cd3                            String? @db.VarChar(50)
+  telefonocontac3                String? @db.VarChar(50)
+  direccioncontac3               String? @db.VarChar(50)
+  email_contac3                  String? @db.VarChar(60)
+  contacto4                      String? @db.VarChar(50)
+  cd4                            String? @db.VarChar(50)
+  telefono_contac4               String? @db.VarChar(50)
+  direccioncontac4               String? @db.VarChar(50)
+  email_contac4                  String? @db.VarChar(60)
+  contacto5                      String? @db.VarChar(50)
+  cd5                            String? @db.VarChar(50)
+  telefonocontac5                String? @db.VarChar(50)
+  direccioncontac5               String? @db.VarChar(50)
+  email_contac5                  String? @db.VarChar(60)
+  contacto6                      String? @db.VarChar(50)
+  cd6                            String? @db.VarChar(50)
+  telefonocontac6                String? @db.VarChar(50)
+  direccioncontac6               String? @db.VarChar(50)
+  email_contac6                  String? @db.VarChar(60)
+  contacto7                      String? @db.VarChar(50)
+  cd7                            String? @db.VarChar(50)
+  telefonocontac7                String? @db.VarChar(50)
+  direccioncontac7               String? @db.VarChar(50)
+  email_contac7                  String? @db.VarChar(60)
+  dto1                           Float?
+  plazo2                         Int?
+  dto2                           Float?
+  plazo3                         Int?
+  dto3                           Float?
+  ob1                            String? @db.Text
+  fechaingreso                   DateTime? @db.Timestamp(3)
+  mercado                        Int?
+  zona                           Int?
+  tipodedocumento                Int?
+  primernombre                   String? @db.VarChar(50)
+  segundonombre                  String? @db.VarChar(50)
+  primerapellido                 String? @db.VarChar(50)
+  segundoapellido                String? @db.VarChar(50)
+  actividad_economica            String? @db.VarChar(50)
+  img_cliente                    Bytes?
+  hijos_t_clientes_direcciones_1 ClientesDirecciones[] @relation("fk_t_clientes_direcciones_t_clientes")
+  hijos_t_encabezadopedido_1     Encabezadopedido[] @relation("fk_t_encabezadopedido_t_clientes")
+  hijos_t_facturacion_ppal_1     FacturacionPpal[] @relation("fk_t_facturacion_ppal_t_clientes")
+  hijos_t_orden_compra_1         OrdenCompra[] @relation("fk_t_orden_compra_t_clientes")
+  @@map("t_clientes")
+}
+
+/// Legado: [dbo].[T_clientes_Direcciones]
+model ClientesDirecciones {
+  item                         Int @id
+  nit                          String? @db.VarChar(15)
+  ivac                         Float?
+  dctos                        Float? @default(0)
+  nombrecliente                String? @db.VarChar(70)
+  telefono                     String? @db.VarChar(50)
+  direccion                    String? @db.VarChar(200)
+  ciudad                       String? @db.VarChar(50)
+  coveta                       Int?
+  vendedor                     String? @db.VarChar(50)
+  nitvariable                  String? @db.VarChar(15)
+  rtfte                        Float?
+  lprecio                      Int?
+  tipo                         String? @db.VarChar(1)
+  activo                       Int? @default(0)
+  clave                        String? @db.VarChar(10)
+  zona                         String? @db.VarChar(50)
+  campo1                       String? @db.VarChar(50)
+  campo2                       String? @db.VarChar(50)
+  codint                       String? @db.VarChar(15)
+  memocartera                  String? @db.VarChar(250)
+  clasificacioncontable        String? @db.VarChar(10)
+  puc                          String? @db.VarChar(17)
+  trasportadora                String? @db.VarChar(50) @default("")
+  division                     String? @db.VarChar(50)
+  indicativo                   String? @db.VarChar(3)
+  fechaapertura                DateTime? @db.Timestamp(3) @default(now())
+  firstname                    String? @db.VarChar(100)
+  secondname                   String? @db.VarChar(80)
+  firstlastname                String? @db.VarChar(80)
+  secondlastname               String? @db.VarChar(80)
+  cobrasegurodetransporte      Boolean?
+  sedeasignada                 String? @db.VarChar(50)
+  radicarfactura               Boolean?
+  requiereordendecompra        Boolean?
+  monedadefacturacion          String? @db.Char(10)
+  generarestadodecuenta        Boolean?
+  observaciones                String? @db.VarChar(1000)
+  isfacturable                 Boolean?
+  paisdeorigen                 String? @db.VarChar(50)
+  codigopanoramacontable       String? @db.VarChar(10)
+  isactivoproveedor            Boolean?
+  contacto                     String? @db.VarChar(50)
+  condicionescompra            Int?
+  tipoprov                     String? @db.VarChar(50)
+  marcacomercial               String? @db.VarChar(50)
+  codigopais                   String? @db.VarChar(10)
+  beneficiario                 String? @db.VarChar(50)
+  codigopanoramacontableprov   String? @db.VarChar(10)
+  clasificacioncontableprov    String? @db.VarChar(10)
+  direccionparacorrespondencia Boolean?
+  ruta                         String? @db.VarChar(15)
+  prefdespacho                 String? @db.Char(4)
+  promotor                     String? @db.VarChar(100)
+  item3                        Int?
+  rel_t_clientes_1             Clientes? @relation("fk_t_clientes_direcciones_t_clientes", fields: [nit], references: [nit], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_clientes_direcciones_t_clientes")
+  hijos_t_facturacion_ppal_2   FacturacionPpal[] @relation("fk_t_facturacion_ppal_t_clientes_direcciones")
+  @@map("t_clientes_direcciones")
+}
+
+/// Legado: [dbo].[t_detalle_refencia_CV]
+model DetalleRefenciaCv {
+  productoean              String @id @db.VarChar(50)
+  codigoreferencia         String? @db.VarChar(50)
+  diasvigenciaproveedor    Int?
+  diasvigenciacedi         Int?
+  cantidadempaque          Decimal? @db.Decimal(14, 2)
+  peso                     Decimal? @db.Decimal(14, 3)
+  volumen                  Decimal? @db.Decimal(14, 3)
+  fechamodificacion        DateTime? @db.Timestamp(3)
+  stockmin                 Decimal? @db.Decimal(14, 2)
+  stockmax                 Decimal? @db.Decimal(14, 2)
+  bodega                   String @db.VarChar(20)
+  codgrupoprm              String? @db.VarChar(10)
+  controla_status_calidad  Int?
+  factor_estibado          Int?
+  controlafechavencimiento Int?
+  @@map("t_detalle_refencia_cv")
+}
+
+/// Legado: [dbo].[T_Detalle_Referencia]
+model DetalleReferencia {
+  productoean                     String @id @db.VarChar(50)
+  presentacion                    String? @db.VarChar(50)
+  descripciontalla                String? @db.VarChar(2) @default("")
+  descripcioncolor                String? @db.VarChar(50)
+  codigoreferencia                String? @db.VarChar(5)
+  descripcion                     String? @db.VarChar(120)
+  dimenxion                       String? @db.VarChar(50)
+  um1                             String? @db.VarChar(50)
+  um2                             String? @db.VarChar(50)
+  cantidadempaque                 Float?
+  costo                           Float?
+  bodega                          String? @db.VarChar(15)
+  hrvolumen                       Float?
+  hrpeso                          Float?
+  cempaque                        Float?
+  abuelo                          Int?
+  cant_fcos                       Int?
+  estado                          Int? @default(0)
+  campo1                          Int?
+  campo2                          Int?
+  puc                             String? @db.VarChar(15)
+  suicheweb                       Int?
+  ivadetalle                      Float?
+  prioridad                       Int?
+  codigoreferenciavc              String? @db.VarChar(5)
+  tipo_empaque                    String? @db.VarChar(50)
+  tipo_mercado                    String? @db.VarChar(50)
+  laboratorio                     String? @db.VarChar(50)
+  prioridadrotacion               String? @db.Char(10)
+  nombrecomercial                 String? @db.VarChar(50)
+  registroinvima                  String? @db.VarChar(50)
+  costopromajustado               Float? @default(0)
+  tiporef                         Int?
+  inventariable                   Int? @db.SmallInt @default(1)
+  categoriaart                    String? @db.Char(5) @default("")
+  claseart                        String? @db.Char(5) @default("")
+  tipoart                         String? @db.Char(5) @default("")
+  fechaapertura                   DateTime? @db.Timestamp(3) @default(now())
+  pedidoautomatico                Int?
+  fraccion                        Int?
+  descuentodistribuidor           Decimal? @db.Decimal(18, 0)
+  isfacturable                    Boolean?
+  iscompuesto                     String? @db.VarChar(1)
+  codigopanoramacontable          String? @db.VarChar(10)
+  costoinicial                    Float?
+  stockmin                        Decimal? @db.Decimal(15, 3)
+  stockmax                        Decimal? @db.Decimal(15, 3)
+  img_articulo                    Bytes?
+  costopromajustado2              Float?
+  hijos_t_detalle_orden_compra_1  DetalleOrdenCompra[] @relation("fk_t_detalle_orden_compra_t_detalle_referencia")
+  rel_t_ins_referencias_1         InsReferencias? @relation("fk_t_detalle_referencia_t_ins_referencias", fields: [codigoreferencia], references: [codigoreferencia], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_detalle_referencia_t_ins_referencias")
+  hijos_t_ins_lista_precio_ppal_1 InsListaPrecioPpal[] @relation("fk_t_ins_lista_precio_ppal_t_detalle_referencia")
+  hijos_t_serie_pedido_nueva_1    SeriePedidoNueva[] @relation("fk_t_serie_pedido_nueva_t_detalle_referencia")
+  @@map("t_detalle_referencia")
+}
+
+/// Legado: [dbo].[T_detalle_referencia_ext]
+model DetalleReferenciaExt {
+  id                       Int @id @default(autoincrement())
+  referencia               String @db.VarChar(50)
+  descripcion              String @db.VarChar(300)
+  ean                      String @db.VarChar(50)
+  consumo_mensual          Int?
+  punto_de_reorden         Int?
+  cantidad_ideal_de_compra Int?
+  valor_maximo_inventario  Decimal? @db.Decimal(19, 3)
+  valor_unitario           Decimal? @db.Decimal(19, 3)
+  descripcioncliente       String @db.VarChar(300)
+  @@map("t_detalle_referencia_ext")
+}
+
+/// Legado: [dbo].[T_ins_Consultas_Aleatorias]
+model InsConsultasAleatorias {
+  codselec               String @id @db.VarChar(15)
+  nombre                 String? @db.VarChar(150)
+  descripcion            String? @db.VarChar(500)
+  lenguajesql            String? @db.VarChar(500)
+  numcampobusqueda       Int?
+  titulosgrilla          String? @db.Text
+  anchosgrilla           String? @db.Text
+  numcolumnanamecontacto Int?
+  coneccion              String? @db.VarChar(50)
+  usuario                String? @db.Char(25)
+  formulario             String? @db.VarChar(60)
+  @@map("t_ins_consultas_aleatorias")
+}
+
+/// Legado: [dbo].[T_ins_Descripciones]
+model InsDescripciones {
+  grupo               String @db.VarChar(100)
+  codigodescripcion   String @db.Char(50)
+  descripcion         String? @db.VarChar(250)
+  descripcion_default String? @db.VarChar(100)
+
+  @@id([grupo, codigodescripcion])
+  @@map("t_ins_descripciones")
+}
+
+/// Legado: [dbo].[T_ins_genericos]
+model InsGenericos {
+  idgenericos             Int @id @default(autoincrement())
+  ref                     String? @db.VarChar(5)
+  codigoinsumo            String? @db.VarChar(50)
+  consumo                 Float?
+  procesoconsume          String? @db.VarChar(50)
+  clase_consumo           String? @db.VarChar(100)
+  orden                   Int? @db.SmallInt
+  num                     String? @db.VarChar(10)
+  paquetes                Int?
+  eaninsumo               String? @db.VarChar(50)
+  escompuesto             String? @db.VarChar(1) @default("-")
+  descripcion             String? @db.VarChar(150) @default("")
+  nivel                   Int? @db.SmallInt @default(1)
+  rel_t_ins_referencias_1 InsReferencias? @relation("fk_t_ins_genericos_t_ins_referencias", fields: [ref], references: [codigoreferencia], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_ins_genericos_t_ins_referencias")
+  @@map("t_ins_genericos")
+}
+
+/// Legado: [dbo].[T_ins_referencias]
+model InsReferencias {
+  codigoreferencia             String @id @db.VarChar(5)
+  nombreref                    String? @db.VarChar(120)
+  tallas                       String? @db.VarChar(70)
+  pventa                       Float? @db.Real
+  foto                         Bytes?
+  linea                        String? @db.VarChar(50)
+  cod_muestra                  String? @db.VarChar(50)
+  coleccion                    String? @db.VarChar(50)
+  observaciones                String? @db.Text
+  posarancel                   String? @db.VarChar(50)
+  fechacrea                    DateTime? @db.Timestamp(3)
+  categoria                    String? @db.VarChar(50)
+  dimension                    String? @db.VarChar(50)
+  confirmar                    Boolean? @default(false)
+  hiperfoto                    String? @db.Text
+  tiporef                      String? @db.VarChar(2)
+  lote_prox                    Int?
+  ano_prox                     String? @db.VarChar(50)
+  ceros                        String? @db.VarChar(3)
+  abuelo                       Int?
+  numero_meses                 Int?
+  tipo_producto                String? @db.VarChar(50)
+  grupo_terapeutico            String? @db.VarChar(50)
+  pricipioactivo               String? @db.VarChar(50)
+  unido                        String? @db.VarChar(50)
+  referencia                   String? @db.VarChar(30)
+  hijos_t_detalle_referencia_1 DetalleReferencia[] @relation("fk_t_detalle_referencia_t_ins_referencias")
+  hijos_t_ins_genericos_1      InsGenericos[] @relation("fk_t_ins_genericos_t_ins_referencias")
+  hijos_t_seriepedido_2        Seriepedido[] @relation("fk_t_seriepedido_t_ins_referencias")
+  @@map("t_ins_referencias")
+}
+
+/// Legado: [dbo].[T_ins_Registo_Sanitario]
+model InsRegistoSanitario {
+  id               Int @default(autoincrement())
+  cod_registro     String @db.VarChar(50)
+  productoean      String @db.VarChar(50)
+  fecharegistro    DateTime? @db.Timestamp(3)
+  fechavencimiento DateTime? @db.Timestamp(3)
+  codpaisregistro  String? @db.VarChar(10)
+  estado           Int?
+
+  @@id([cod_registro, productoean])
+  @@map("t_ins_registo_sanitario")
+}
+
+/// Legado: [dbo].[T_ins_WMS]
+model InsWms {
+  bode      String? @db.VarChar(20)
+  namearea  String? @db.VarChar(150)
+  x1pos     Int?
+  x2pos     Int?
+  y1pos     Int?
+  y2pos     Int?
+  zonapiso  String? @db.VarChar(15)
+  zonapadre String? @db.VarChar(15)
+  esfinal   String? @db.Char(1)
+  mapaid    Int?
+  wmsid     Int @id @default(autoincrement())
+  @@map("t_ins_wms")
+}
+
+/// Legado: [dbo].[T_Log_Transacciones]
+model LogTransacciones {
+  idlog          Int @id @default(autoincrement())
+  usuario        String? @db.VarChar(50)
+  transaccion    String? @db.VarChar(100)
+  fecha          DateTime? @db.Timestamp(3)
+  programa       String? @db.Text
+  formulario     String? @db.VarChar(100)
+  ensamblado     String? @db.VarChar(50)
+  nombredeequipo String? @db.VarChar(50)
+  direccionip    String? @db.VarChar(50)
+  backup         Boolean @default(false)
+  @@map("t_log_transacciones")
+}
+
+/// Legado: [dbo].[T_MetaCadena]
+model Metacadena {
+  idcadena   Int @id @default(autoincrement())
+  metacadena String? @db.VarChar(2000)
+  @@map("t_metacadena")
+}
+
+/// Legado: [dbo].[T_Programas_Usuarios]
+model ProgramasUsuarios {
+  id               Int @id @default(autoincrement())
+  programa         String @db.VarChar(50)
+  usuario          Int
+  grupo            String? @db.VarChar(50)
+  actualizar       Boolean
+  eliminar         Boolean
+  consultar        Boolean
+  adicionar        Boolean
+  rel_t_usuarios_1 Usuarios @relation("fk_t_programas_usuarios_t_usuarios", fields: [usuario], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_programas_usuarios_t_usuarios")
+  @@map("t_programas_usuarios")
+}
+
+/// Legado: [dbo].[Templeados]
+model Templeados {
+  id                        Int @id @default(autoincrement())
+  nombre                    String? @db.VarChar(50)
+  apellidos                 String? @db.VarChar(50)
+  fecha_nacimiento          String? @db.VarChar(50)
+  cedula                    String? @db.VarChar(50)
+  telefono                  String? @db.VarChar(50)
+  direccion                 String? @db.VarChar(50)
+  cuentabancaria            String? @db.VarChar(50)
+  corporacion               String? @db.VarChar(50)
+  eps                       String? @db.VarChar(50)
+  numero_eps                String? @db.VarChar(500)
+  ips                       String? @db.VarChar(50)
+  numero_ips                String? @db.VarChar(50)
+  foto                      Bytes?
+  fechaingreso              DateTime? @db.Timestamp(3)
+  fechatermina              DateTime? @db.Timestamp(3)
+  salabasico                Float?
+  horastraba                Float?
+  prestamos                 Float?
+  subtte                    Float?
+  dediss                    Float?
+  otrasdeducciones          Float?
+  ingresoscontrato          Int?
+  valorhora                 Float?
+  nivelempleado             String? @db.VarChar(50)
+  area                      String? @db.VarChar(25)
+  estado                    Boolean
+  turno                     String? @db.Char(5)
+  hijos_t_empleados_zonas_1 EmpleadosZonas[] @relation("fk_t_empleados_zonas")
+  @@map("templeados")
+}
+
+/// Legado: [dbo].[traza]
+model Traza {
+  id       Int @id @default(autoincrement())
+  paso     String? @db.VarChar(50)
+  @@map("traza")
+}
+
+/// Legado: [dbo].[T_Usuarios]
+model Usuarios {
+  id                           Int @id @default(autoincrement())
+  usuario                      String @db.VarChar(50)
+  clave                        String @db.VarChar(50)
+  grupo                        String @db.VarChar(50)
+  codcia                       String @db.VarChar(10)
+  direlectronica               String? @db.VarChar(50)
+  telefono                     String? @db.VarChar(10)
+  cargo                        String? @db.VarChar(50)
+  direccionip                  String? @db.VarChar(15)
+  nombrecompleto               String? @db.VarChar(100)
+  imgfirma                     Bytes?
+  fechacreacion                DateTime? @db.Timestamp(3)
+  fechamodificacion            DateTime? @db.Timestamp(3)
+  fechainicio                  DateTime? @db.Timestamp(3)
+  fechavencimiento             DateTime? @db.Timestamp(3)
+  estado                       Int?
+  fechaultimaconexion          DateTime? @db.Timestamp(3)
+  adminmodificacion            Int?
+  idmac                        String? @db.VarChar(100)
+  hijos_t_programas_usuarios_1 ProgramasUsuarios[] @relation("fk_t_programas_usuarios_t_usuarios")
+  @@map("t_usuarios")
+}

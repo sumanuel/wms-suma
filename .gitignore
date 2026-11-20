@@ -1,0 +1,15 @@
+/node_modules
+/.next/
+/out/
+/build
+/coverage
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+.env*
+!.env.example
+/src/generated/
+.DS_Store
+
+# Credenciales de prueba (las genera npm run cliente:usuarios-prueba)
+USUARIOS-DE-PRUEBA.md

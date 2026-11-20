@@ -1,0 +1,72 @@
+model Perfil {
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre         String          @unique
+  descripcion    String?
+  /// Los administradores pasan todas las verificaciones de permiso.
+  esAdministrador Boolean        @default(false) @map("es_administrador")
+  activo         Boolean         @default(true)
+  creadoEn       DateTime        @default(now()) @map("creado_en") @db.Timestamptz(6)
+  actualizadoEn  DateTime        @default(now()) @updatedAt @map("actualizado_en") @db.Timestamptz(6)
+  permisos       PerfilPermiso[]
+  usuarios       Usuario[]
+
+  @@map("perfil")
+}
+
+/// Permiso con la forma "<modulo>.<accion>", p. ej. "articulos.ver". El catálogo vive en src/lib/nucleo/modulos.ts.
+model PerfilPermiso {
+  perfilId String @map("perfil_id") @db.Uuid
+  permiso  String
+  perfil   Perfil @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+
+  @@id([perfilId, permiso])
+  @@map("perfil_permiso")
+}
+
+model Usuario {
+  id                     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email                  String    @unique
+  nombre                 String
+  /// scrypt$N$sal$hash. Nulo = todavía sin contraseña (no puede ingresar).
+  hashContrasena         String?   @map("hash_contrasena")
+  debeCambiarContrasena  Boolean   @default(true) @map("debe_cambiar_contrasena")
+  contrasenaCambiadaEn   DateTime? @map("contrasena_cambiada_en") @db.Timestamptz(6)
+  activo                 Boolean   @default(true)
+  intentosFallidos       Int       @default(0) @map("intentos_fallidos")
+  bloqueadoHasta         DateTime? @map("bloqueado_hasta") @db.Timestamptz(6)
+  perfilId               String    @map("perfil_id") @db.Uuid
+  perfil                 Perfil    @relation(fields: [perfilId], references: [id])
+  creadoEn               DateTime  @default(now()) @map("creado_en") @db.Timestamptz(6)
+  actualizadoEn          DateTime  @default(now()) @updatedAt @map("actualizado_en") @db.Timestamptz(6)
+
+  @@index([perfilId])
+  @@map("usuario")
+}
+
+model RegistroIngreso {
+  id        BigInt   @id @default(autoincrement())
+  usuarioId String?  @map("usuario_id") @db.Uuid
+  email     String
+  exito     Boolean
+  motivo    String?
+  ip        String?
+  creadoEn  DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+
+  @@index([email, creadoEn])
+  @@map("registro_ingreso")
+}
+
+model AuditoriaCambio {
+  id         BigInt   @id @default(autoincrement())
+  usuarioId  String?  @map("usuario_id") @db.Uuid
+  entidad    String
+  entidadId  String   @map("entidad_id")
+  accion     String
+  antes      Json?
+  despues    Json?
+  creadoEn   DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+
+  @@index([entidad, entidadId])
+  @@index([creadoEn])
+  @@map("auditoria_cambio")
+}

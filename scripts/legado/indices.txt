@@ -1,0 +1,10 @@
+# Índices no únicos deducidos de las consultas de los SP (JOIN / WHERE más usados). tabla: columnas
+t_pic: lote, cod_producto
+t_pic: ubicacion
+t_pic: cajap
+t_entradas_ras: lote_orden, producto
+t_historia_status_calidad: lote, productoean
+t_ins_coordenadas: bodegac
+t_temporal_conteowms: idconteo
+t_temporal_conteowms: caja
+t_wms_temporal_asigna_prepacking: idpicking

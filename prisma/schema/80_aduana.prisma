@@ -1,0 +1,173 @@
+// GENERADO por scripts/legado/convertir_tablas.py desde el DDL de CO_DLL_BASE. No editar a mano: edite el conversor
+// o muévase a un modelo propio cuando el módulo se rediseñe. Los campos se llaman como la columna (snake_case).
+
+
+/// Legado: [dbo].[t_aduana_envio_liquidado]
+model AduanaEnvioLiquidado {
+  id                   Int @default(autoincrement())
+  picking              Int
+  tipocaja             String? @db.VarChar(2)
+  pesototalenviado     Decimal? @db.Decimal(18, 3)
+  pesoenreexpedicion   Decimal? @db.Decimal(14, 3)
+  valorxkg             Decimal? @db.Decimal(18, 3)
+  fletesxpesoenviado   Decimal? @db.Decimal(18, 3)
+  mciaenviadaacosto    Decimal? @db.Decimal(18, 3)
+  acuerdo              Decimal? @db.Decimal(18, 3)
+  totalxtransportadora Decimal? @db.Decimal(18, 3)
+  transportador        String @db.VarChar(100)
+  tipodepoblacion      String? @db.VarChar(5)
+
+  @@id([picking, transportador])
+  @@map("t_aduana_envio_liquidado")
+}
+
+/// Legado: [dbo].[T_Aduana_Recepcion] · clave sustituta wms_id
+model AduanaRecepcion {
+  wms_id BigInt @id @default(autoincrement())
+  tipodoc             String? @db.VarChar(10)
+  numdoc              String? @db.VarChar(20)
+  nit                 String? @db.VarChar(30)
+  ean                 String? @db.VarChar(50)
+  cantidad            Float?
+  fecharecepcion      DateTime? @db.Timestamp(3)
+  fechaalmacenamiento DateTime? @db.Timestamp(3)
+  @@map("t_aduana_recepcion")
+}
+
+/// Legado: [dbo].[T_Aduana_Recepcion_ArchivoEDI] · clave sustituta wms_id
+model AduanaRecepcionArchivoedi {
+  wms_id BigInt @id @default(autoincrement())
+  numdoc   String? @db.VarChar(20)
+  nit      String? @db.VarChar(30)
+  ean      String? @db.VarChar(50)
+  cantidad Float?
+  @@map("t_aduana_recepcion_archivoedi")
+}
+
+/// Legado: [dbo].[T_Aduana_WMS_POS]
+model AduanaWmsPos {
+  numpicking        Int?
+  productoean       String? @db.VarChar(50)
+  numdecaja         Int?
+  cantidad          Float?
+  id                Int @id @default(autoincrement())
+  eancaja           Int?
+  lote              String? @db.VarChar(50)
+  tipocaja          String @db.VarChar(50)
+  pesoempacado      Decimal? @db.Decimal(14, 2)
+  fecharegistro     DateTime? @db.Timestamp(3)
+  idusuarioaduana   Int?
+  idcajamaster      String? @db.VarChar(30)
+  npedido           String? @db.VarChar(20)
+  rel_tiposdecaja_1 Tiposdecaja @relation("fk_t_aduana_wms_pos", fields: [tipocaja], references: [tipo_caja], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_aduana_wms_pos")
+  @@map("t_aduana_wms_pos")
+}
+
+/// Legado: [dbo].[T_entradas_RAS]
+model EntradasRas {
+  autocaja                                   Float? @default(0)
+  cajano                                     Float @id
+  producto                                   String @db.VarChar(50)
+  cantidadprog                               Float? @default(0)
+  registra                                   Int? @default(0)
+  lote_orden                                 String @db.VarChar(20)
+  nmvto                                      Int?
+  brecibe                                    String? @db.VarChar(15)
+  cajaasociada                               Int?
+  describteetiqueta                          String @db.VarChar(250)
+  saldoactual                                Float?
+  ubicacionpreasign                          String? @db.VarChar(50)
+  operadorras                                String? @db.VarChar(20)
+  impresa                                    Int? @default(0)
+  des_prov                                   String? @db.VarChar(100)
+  des_articulo                               String? @db.VarChar(100)
+  des_umedida                                String? @db.VarChar(50)
+  pesocaja                                   Decimal? @db.Decimal(14, 3)
+  tipocaja                                   String? @db.VarChar(10)
+  fecha                                      DateTime? @db.Timestamp(3)
+  cajarecargable                             Int?
+  cantidadvalida                             Float?
+  idempleadoempaca                           Int?
+  fechaempaque                               DateTime? @db.Timestamp(3)
+  rel_t_maestro_lote_pt_1                    MaestroLotePt @relation("fk_t_entradas_ras_maestro_lote_pt", fields: [lote_orden, producto], references: [loteproveedor, codean], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_entradas_ras_maestro_lote_pt")
+  hijos_t_ins_coordenadas_pods_1             InsCoordenadasPods[] @relation("fk_t_ins_coordenadas_pods_t_entradas_ras")
+  hijos_t_pic_1                              Pic[] @relation("fk_t_pic")
+  hijos_t_pic_ajuste_1                       PicAjuste[] @relation("fk_t_pic_ajuste")
+  hijos_t_pic_multiproducto_1                PicMultiproducto[] @relation("fk_t_pic_multiproducto_entradas_ras")
+  hijos_t_temporal_conteowms_1               TemporalConteowms[] @relation("fk_t_temporal_conteowms")
+  hijos_t_temporal_conteowms_multiproducto_1 TemporalConteowmsMultiproducto[] @relation("fk_t_temporal_conteowms_multiproducto_t_entradas_r")
+  @@index([lote_orden, producto], map: "ix_t_entradas_ras_lote_orden_producto")
+  @@map("t_entradas_ras")
+}
+
+/// Legado: [dbo].[t_importa_recibo_ciego]
+model ImportaReciboCiego {
+  id                 Int @id @default(autoincrement())
+  ref                String? @db.VarChar(50)
+  lote               String? @db.VarChar(40)
+  fvence             DateTime? @db.Timestamp(3)
+  cantcajas          Int?
+  factorcaja         Decimal? @db.Decimal(18, 3)
+  documentooc        String? @db.VarChar(100)
+  nit                String? @db.VarChar(20)
+  estado             Int?
+  autorizarecibo     Int?
+  fecharegistro      DateTime? @db.Timestamp(3)
+  idempleadorecibe   Int?
+  idempleadoautoriza Int?
+  ean                String? @db.VarChar(50)
+  barcode            String? @db.VarChar(50)
+  ord_no             String? @db.VarChar(50)
+  pesociego          String? @db.VarChar(10)
+  lineaidpicking     Int?
+  loteproveedor      String? @db.VarChar(20)
+  tipodocto          String? @db.VarChar(30)
+  @@map("t_importa_recibo_ciego")
+}
+
+/// Legado: [dbo].[T_RecepcionExtendida]
+model Recepcionextendida {
+  id                  Int @id @default(autoincrement())
+  documento           String @db.VarChar(20)
+  oc                  String? @db.VarChar(10)
+  nit                 String @db.VarChar(30)
+  id_t100_oc_envia    Int
+  ean                 String @db.VarChar(50)
+  pedproveedor        String @db.VarChar(50)
+  cod_registro        String? @db.VarChar(50)
+  fechavencimientors  DateTime? @db.Date
+  fechavencimiento    DateTime @db.Date
+  cantidadrotulos     Int
+  cantidadcontenido   Int
+  loteproveedor       String? @db.VarChar(50)
+  descripcionproducto String? @db.VarChar(50)
+  estado              Int?
+  bodega              String? @db.VarChar(10)
+  @@map("t_recepcionextendida")
+}
+
+/// Legado: [dbo].[T_traer_RAS]
+model TraerRas {
+  npedido         String? @db.VarChar(20)
+  eanref          String? @db.VarChar(50)
+  cantyref        Decimal? @db.Decimal(18, 5)
+  estado          Int?
+  usuarioprograma Int?
+  empleadoresurte Int?
+  id              Int @id @default(autoincrement())
+  fechaprogramada DateTime? @db.Timestamp(3)
+  fecharesurte    DateTime? @db.Timestamp(3)
+  qtyresurte      Decimal? @db.Decimal(18, 5)
+  prioridad       Int?
+  frecuencia      Int?
+  descripcion     String? @db.VarChar(200)
+  referencia      String? @db.VarChar(50)
+  bodega          String? @db.VarChar(20)
+  ubic_origen     String? @db.VarChar(20)
+  ubic_destino    String? @db.VarChar(20)
+  caja            Int?
+  id_padre        Int?
+  bl              String? @db.VarChar(50)
+  demcal          Decimal? @db.Decimal(14, 2)
+  @@map("t_traer_ras")
+}

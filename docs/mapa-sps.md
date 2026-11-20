@@ -1,0 +1,382 @@
+# Mapa de stored procedures (generado)
+
+SP llamados por el escritorio: 371. Con código en sp.sql: 340. Sin código (pedir): 31.
+
+> **Hallazgo:** 50 de los 340 SP con código son CRUD generado por plantilla (SELECT/INSERT/UPDATE/DELETE sobre una sola tabla). No se portan: los cubre Prisma. Quedan 290 con lógica propia para portar a servicios.
+
+## Sin código en SCRITS BASE
+- spd_t_detalle_prepack
+- spd_t_encabezado_prepack
+- spd_t_entradas_ras
+- spd_t_ins_ubicaciones_fijas_mp
+- spd_t_maestro_lote_pt
+- spd_t_narth_serie_pedido
+- spd_t_seriepedido
+- spi_sg_tc_t_totalcode_trasladoinventario
+- spi_t_despachos_customized
+- [x] spi_tc_sg_recibepedidoecommerce — parcial: importar pedidos desde planilla (/pedidos/importar); el canal de comercio electrónico en línea queda pendiente
+- sps_t_ins_tiposdeorden
+- sps_t_usuarios
+- spu_t_detalle_prepack_customized
+- spu_t_narth_encabezado_pedido_customized2
+- usp_aplicarsecuenciapedidopickingconsolidado
+- usp_crearegistropricat
+- usp_estableceimpresionesdestatus
+- usp_grabacajapicking
+- usp_insertarfacturaconbaseapedido
+- usp_obtenerdsotroslotesproveedor
+- usp_obtenerdsrangoscalidad
+- usp_obtenerexistenciaean
+- usp_obtenernombreinforme
+- usp_obtenerserialespororden
+- usp_obtenerserialesporpedido
+- usp_t_encabezado_prepack_obtenerporvalidaandbodegapicking_display
+- usp_t_ins_ubicaciones_fijas_mp_getbyid
+- usp_t_maestro_lote_pt_getbyid
+- [x] usp_t_narth_encabezado_pedido_modificarestados — hecho: cambio de estado del pedido con transiciones permitidas (código sí existe en sp.sql; la lista de «sin código» lo marcó por diferencia de mayúsculas)
+- usp_t_narth_serie_pedido_obtenerimpuestos
+- [x] usp_terminaraduanadepicking_aduananew_xpedido — hecho: idem
+
+## Con código (estado: pendiente)
+- [ ] sp_repotirilladerecoleccion
+- [x] spd_cajasxpallet — hecho: eliminar pallet (/pallets)
+- [ ] spd_logisticasxcaja
+- [ ] spd_t_aduana_recepcion_archivoedi
+- [ ] spd_t_entrada_ras_customized
+- [ ] spd_t_guia_generada
+- [x] spd_t_ins_consultas_aleatorias — CRUD generado: lo cubre Prisma
+- [x] spd_t_ins_permisosxusuario_tipodeorden — CRUD generado: lo cubre Prisma
+- [ ] spd_t_ins_tarifasdetransporte
+- [ ] spd_t_ins_valoresfijosxempaque
+- [ ] spd_t_ins_volumenesxean
+- [ ] spd_t_ins_zona_empleado
+- [x] spd_t_pallets — hecho: eliminar pallet (/pallets)
+- [ ] spd_t_pic_ubicacionesfijasxean
+- [x] spd_t_ssccxcaja — CRUD generado: lo cubre Prisma
+- [x] spd_t_temporal_conteowms — hecho: se eliminan las líneas al eliminar un conteo abierto
+- [x] spd_t_temporar_encabezado_conteowms_customized — CRUD generado: lo cubre Prisma
+- [ ] spd_tiposdecaja
+- [ ] spi_addnewordendedespacho
+- [ ] spi_addnewordenderecepcion
+- [x] spi_autoaduanaprepacking — hecho: idem
+- [ ] spi_logisticasxcaja
+- [ ] spi_sg_ns_produccionsql
+- [ ] spi_sg_tc_exportaguiagenerada
+- [ ] spi_t_aduana_recepcion_archivoedi
+- [ ] spi_t_aduana_wms_pos
+- [ ] spi_t_aduana_wms_pos_autonumerico
+- [x] spi_t_aduana_wms_pos_xpedido — hecho: empacar un artículo en una caja de la aduana (no se pasa de lo pickeado; una caja, un tipo)
+- [x] spi_t_detalle_prepack — CRUD generado: lo cubre Prisma
+- [x] spi_t_detalle_prepack_customized — CRUD generado: lo cubre Prisma
+- [x] spi_t_encabezado_prepack_customized — CRUD generado: lo cubre Prisma
+- [x] spi_t_entradas_ras_customized — CRUD generado: lo cubre Prisma
+- [ ] spi_t_entradas_ras_customized_new
+- [ ] spi_t_facturacion_ppal_customized
+- [x] spi_t_ins_consultas_aleatorias — CRUD generado: lo cubre Prisma
+- [x] spi_t_ins_descripciones — CRUD generado: lo cubre Prisma
+- [x] spi_t_ins_mapas_wms — CRUD generado: lo cubre Prisma
+- [x] spi_t_ins_permisosxusuario_tipodeorden — CRUD generado: lo cubre Prisma
+- [ ] spi_t_ins_tarifasdetransporte
+- [x] spi_t_ins_ubicaciones_fijas_mp — CRUD generado: lo cubre Prisma
+- [ ] spi_t_ins_valoresfijosxempaque
+- [ ] spi_t_ins_volumenesxean
+- [x] spi_t_ins_wms — CRUD generado: lo cubre Prisma
+- [ ] spi_t_ins_zona_empleado
+- [ ] spi_t_maestro_lote_pt
+- [ ] spi_t_materiales_por_orden_customized_despacho
+- [x] spi_t_narth_serie_pedido — CRUD generado: lo cubre Prisma
+- [x] spi_t_pallets — hecho: agregar caja a pallet (/pallets)
+- [x] spi_t_pic — CRUD generado: lo cubre Prisma
+- [ ] spi_t_pic_ubicacionesfijasxean
+- [x] spi_t_pick_customizedmovil — hecho: pickeo desde el lector (/movil/picking)
+- [x] spi_t_pick_customizedmovil_load — hecho: pickeo desde el lector (/movil/picking)
+- [ ] spi_t_relacioncodbarras
+- [x] spi_t_seriepedido — CRUD generado: lo cubre Prisma
+- [x] spi_t_ssccxcaja — CRUD generado: lo cubre Prisma
+- [ ] spi_t_ssccxcaja_customized
+- [x] spi_t_temporal_conteowms_customized — CRUD generado: lo cubre Prisma
+- [x] spi_t_temporar_encabezado_conteowms_customized — hecho: programar conteo (/conteo/nuevo)
+- [x] spi_t_wms_temporal_asigna_prepacking — CRUD generado: lo cubre Prisma
+- [ ] spi_tiposdecaja
+- [ ] sps_logisticasxcaja
+- [ ] sps_obtener_ubicaciones_de_aduana
+- [ ] sps_obtener_ubicaciones_de_muelle
+- [ ] sps_obtenercamposdetabla
+- [ ] sps_obtenerdetalleordenxkitsandserial
+- [ ] sps_obtenerdetalleordenxkitsandserial_reload
+- [ ] sps_obtenerdetalleordenxkitsandserial_reload_tsql
+- [ ] sps_obtenerdetallepedidoxkitsandserial
+- [ ] sps_obtenerdetallepedidoxkitsandserial_reload
+- [ ] sps_obtenerdetallepedidoxkitsandserial_reload_tsql
+- [ ] sps_obtenerdslotesdeproductosenpicking
+- [ ] sps_obtenerdsxeanwmslite
+- [ ] sps_obtenerobjetosbdxtipo
+- [x] sps_obtenerpedidospendientesdeprepacking — hecho: pestaña «Pedidos listos para picking» con la cobertura de existencias
+- [ ] sps_obtenerpermisosxprogramaandtipodeorden
+- [x] sps_t_codigos_ciudad_dane — CRUD generado: lo cubre Prisma
+- [x] sps_t_detalle_referencia — hecho: listado y ficha de /articulos
+- [ ] sps_t_encabezado_prepack
+- [x] sps_t_entradas_ras — CRUD generado: lo cubre Prisma
+- [ ] sps_t_genpedidosdinamicos
+- [x] sps_t_ins_bodega — CRUD generado: lo cubre Prisma
+- [x] sps_t_ins_consultas_aleatorias — CRUD generado: lo cubre Prisma
+- [ ] sps_t_ins_coordenadas_ubicaciones
+- [ ] sps_t_ins_coordenadasxbodega
+- [ ] sps_t_ins_descripciones
+- [x] sps_t_ins_descripciones2 — CRUD generado: lo cubre Prisma
+- [ ] sps_t_ins_descripcionesxgrupo
+- [ ] sps_t_ins_descripcionesxvbl
+- [ ] sps_t_ins_permisosxusuario_tipodeorden_customized
+- [x] sps_t_ins_referencias — hecho: listado y ficha de /articulos/referencias
+- [ ] sps_t_ins_tarifasdetransporte
+- [ ] sps_t_ins_tipos_caja
+- [x] sps_t_ins_ubicaciones_fijas_mp — CRUD generado: lo cubre Prisma
+- [ ] sps_t_ins_ubicaciones_fijas_mp_customized
+- [x] sps_t_ins_ubicaciones_fijas_mp_display — CRUD generado: lo cubre Prisma
+- [ ] sps_t_ins_valoresfijosxempaque
+- [ ] sps_t_ins_volumenesxean
+- [ ] sps_t_ins_zona_empleado
+- [x] sps_t_maestro_lote_pt — CRUD generado: lo cubre Prisma
+- [x] sps_t_maestro_lote_pt_customized — hecho: listado de lotes de /inventario/lotes
+- [x] sps_t_materiales_por_orden_customized — CRUD generado: lo cubre Prisma
+- [x] sps_t_narth_serie_pedido — CRUD generado: lo cubre Prisma
+- [x] sps_t_narth_serie_pedido_customized — CRUD generado: lo cubre Prisma
+- [x] sps_t_pallets_customized — hecho: lista y contenido de pallets (/pallets)
+- [ ] sps_t_pic_ubicacionesfijasxean
+- [ ] sps_t_programacion_produccion
+- [x] sps_t_ssccxcaja_customized — CRUD generado: lo cubre Prisma
+- [x] sps_t_temporal_conteowms_customized — hecho: cajas del conteo (vistas todas, pendientes, con diferencia)
+- [x] sps_t_temporar_encabezado_conteowms_customized — hecho: listado y resumen de conteos
+- [x] sps_t_transportador — CRUD generado: lo cubre Prisma
+- [ ] sps_templeadospk
+- [ ] sps_tiposdecaja
+- [ ] sps_validaserialesingresados
+- [ ] spu_actualizacantidadrealprepacking
+- [ ] spu_actualizacantidadrealprepacking2
+- [x] spu_actualizarcantidadesfacturadas — hecho: al despachar se descuenta lo entregado del pedido y pasa a Despacho total/parcial; sin t_pdto_terminado
+- [ ] spu_actualizarlineadepickingbin
+- [ ] spu_actualizart_ssccxcaja
+- [x] spu_eliminarpedidoantesdeprepacking — hecho: idem (devuelve el pedido a «En espera» sin picking)
+- [ ] spu_eliminarpedidodespuesdeaduanado
+- [ ] spu_generarautoaduanacontrolandoseriales
+- [ ] spu_logisticasxcaja
+- [ ] spu_ssccxcaja_actualizatipoypeso
+- [x] spu_t_detalle_prepack — CRUD generado: lo cubre Prisma
+- [ ] spu_t_detalle_prepack_customized_reload
+- [x] spu_t_encabezado_prepack — CRUD generado: lo cubre Prisma
+- [x] spu_t_entradas_ras — CRUD generado: lo cubre Prisma
+- [x] spu_t_guias_generadas_actualizanumenvio — hecho: seguimiento de la guía: enviada y entregada
+- [x] spu_t_guias_generadas_customized — hecho: idem
+- [x] spu_t_ins_consultas_aleatorias — CRUD generado: lo cubre Prisma
+- [x] spu_t_ins_descripciones — CRUD generado: lo cubre Prisma
+- [x] spu_t_ins_permisosxusuario_tipodeorden — CRUD generado: lo cubre Prisma
+- [ ] spu_t_ins_tarifasdetransporte
+- [x] spu_t_ins_ubicaciones_fijas_mp — CRUD generado: lo cubre Prisma
+- [ ] spu_t_ins_valoresfijosxempaque
+- [ ] spu_t_ins_volumenesxean
+- [ ] spu_t_ins_zona_empleado
+- [x] spu_t_maestro_lote_pt — CRUD generado: lo cubre Prisma
+- [x] spu_t_maestro_lote_pt_customized — CRUD generado: lo cubre Prisma
+- [ ] spu_t_materiales_por_orden
+- [ ] spu_t_narth_serie_pedido
+- [x] spu_t_pallets — hecho: cambio de pallet de una caja (sacar y agregar) (/pallets)
+- [ ] spu_t_pic_ubicacionesfijasxean
+- [ ] spu_t_seriepedido
+- [ ] spu_t_seriepedido_actualizar_aduana
+- [ ] spu_t_seriepedido_actualizar_muelle
+- [x] spu_t_ssccxcaja — CRUD generado: lo cubre Prisma
+- [ ] spu_t_ssccxcaja_customized
+- [ ] spu_t_ssccxcaja_reload
+- [x] spu_t_temporal_conteowms_customized — CRUD generado: lo cubre Prisma
+- [x] spu_t_temporar_encabezado_conteowms_customized — CRUD generado: lo cubre Prisma
+- [ ] spu_t_traer_ras
+- [ ] spu_ta_facturacion_customized
+- [ ] spu_tiposdecaja
+- [ ] spu_trasladatbltemporaltodetalleprepack
+- [x] usp_actualizacajasprogramacionconteo — hecho: reemplazado por el aplicar de arriba (el original estaba desactivado con RETURN y con el signo invertido)
+- [ ] usp_actualizalineaspicking
+- [ ] usp_actualizarestadoentregamaterialespororden
+- [ ] usp_actualizarreservadeordenproduccion
+- [x] usp_actualizarreservadepedido — hecho: «Reservar existencias» del pedido (reserva por línea = menor entre pendiente y disponible)
+- [x] usp_actualizarstatuscalidadlote — hecho: cambio de estado de calidad en la ficha del lote (reglas portadas; ya no depende del adaptador ERP)
+- [ ] usp_actualizartipodecajaaduana
+- [ ] usp_actualizasaldocajaspick
+- [ ] usp_agregardespachofacturacion
+- [x] usp_agregarguiatransportadora — hecho: idem (sin el reporte T_DESPACHOS ni las tarifas automáticas)
+- [ ] usp_ajustedereservas
+- [ ] usp_auditoria_pickingxop
+- [ ] usp_auditoriadiferenciaswmstoinventario
+- [ ] usp_consultaestadolotesxop
+- [ ] usp_contabilizafactura
+- [ ] usp_controldeversion
+- [ ] usp_crea_ubicaciones_pods_zpl
+- [ ] usp_crearcajapods
+- [ ] usp_crearlotesdesdeopexterna
+- [x] usp_dskpi_ocupacionesxzona — hecho: reporte «Ocupación por zona» (lib/indicadores/reportes.ts)
+- [x] usp_dskpidiasdeinventario — hecho: reporte «Antigüedad del inventario» (lib/indicadores/reportes.ts)
+- [x] usp_dskpifillrate — hecho: reporte «Fill rate por pedido» (lib/indicadores/reportes.ts)
+- [x] usp_dskpiobsolecenciadeinventario — hecho: reporte «Vencimientos del inventario» (lib/indicadores/reportes.ts)
+- [x] usp_dskpiproductividadaduana — hecho: reporte «Productividad de aduana por día» (lib/indicadores/reportes.ts)
+- [ ] usp_dskpiproductividadmontacarga
+- [x] usp_dskpiproductividadpicking — hecho: reportes de productividad de picking (lib/indicadores/reportes.ts)
+- [x] usp_dskpiproductividadpickingxrangofecha — hecho: productividad de picking por rango de fechas (lib/indicadores/reportes.ts)
+- [ ] usp_elaboratiquetedecajas
+- [x] usp_elaboratiquetessccxcaja — hecho: etiquetas de cajas de despacho (/pallets)
+- [x] usp_eliminarpicking — hecho: eliminar picking sin ejecutar: libera reservas y devuelve el pedido a «En espera»
+- [ ] usp_establece_estado_rechazo
+- [ ] usp_establececonfirmaciondeimpresion
+- [x] usp_estableceimpresiondeetiqueta — hecho: conteo de impresiones y aviso de reimpresión (/pallets)
+- [ ] usp_establecercajascontenedoras
+- [ ] usp_establecerestadoprepackingenaduana
+- [ ] usp_establecerubicacionfijaxeanpic
+- [x] usp_establecerubicacionpallet — hecho: ubicar pallet (/pallets)
+- [x] usp_establecerubicacionpalletnew — hecho: ubicar pallet (/pallets)
+- [x] usp_establecervaloresdeconteoenpic — hecho: aplicar conteo: el saldo de la caja pasa a lo contado, con ajuste auditado
+- [ ] usp_establecesecuenciasorted
+- [ ] usp_estableceshorturl
+- [ ] usp_establecetbltemporalstatus
+- [ ] usp_generarajustefromwms
+- [x] usp_generarpicking_auto — hecho: generar picking de un pedido (/picking/generar): asigna por vencimiento y ruta, reserva y enlaza al pedido; sin ordenes de despacho ni ERP
+- [ ] usp_imprimeshortbarcodebyitem
+- [x] usp_insertarfacturaconbaseaprepacking — hecho: no se porta: la facturación contable es del ERP; el despacho registra el número de factura
+- [ ] usp_inv_iniciaubicacionesxzona
+- [ ] usp_inv_reconstruyesaldosdecajaxzona
+- [ ] usp_itera_cubicadoxcajas
+- [ ] usp_listadearticulosxcajawms
+- [ ] usp_llevarloteswmstoerp
+- [ ] usp_obtenercajapods
+- [x] usp_obtenercajaspickingaduana — hecho: «Cajas armadas» de la ficha de aduana
+- [x] usp_obtenercajasporlote — hecho: cajas del lote en su ficha
+- [ ] usp_obtenercajasporlotefaltante
+- [ ] usp_obtenercajasxean
+- [ ] usp_obtenerciudadesdane
+- [ ] usp_obtenercoordenadascruzadaporzonafinal
+- [ ] usp_obtenercoordenadasporzonafinal
+- [ ] usp_obtenerdatosws_aldia
+- [ ] usp_obtenerdespachoporsscc
+- [ ] usp_obtenerdetalleprepackingconubicacioneswms
+- [ ] usp_obtenerdinamicasporformularioporusuario
+- [ ] usp_obtenerdireccionescliente
+- [ ] usp_obtenerdsarticulosdocumentolote
+- [ ] usp_obtenerdsarticulosenoc
+- [ ] usp_obtenerdsarticulospendientesxpicking
+- [ ] usp_obtenerdsarticulosxubicacion
+- [ ] usp_obtenerdsavisodespacho
+- [x] usp_obtenerdsdatosindicadores — hecho: página de Indicadores (lib/indicadores/reportes.ts)
+- [ ] usp_obtenerdsdocumentorecepcion
+- [ ] usp_obtenerdsfirmas
+- [ ] usp_obtenerdsinfoencabezadopicking
+- [x] usp_obtenerdsinventariosxeanwms — hecho: /inventario (existencias y cajas); falta el saldo ERP (vista del adaptador)
+- [ ] usp_obtenerdsinventariosxeanwmstraeras
+- [ ] usp_obtenerdsinventariowmsconsolidado
+- [ ] usp_obtenerdslistosparapicking
+- [ ] usp_obtenerdsmonitoreodespachos
+- [ ] usp_obtenerdspendientesxeanwms
+- [ ] usp_obtenerdsprocesostipoorden
+- [x] usp_obtenerdsproductividadpicking — hecho: reportes de productividad de picking (lib/indicadores/reportes.ts)
+- [x] usp_obtenerdsproximopicking — hecho: listas «Por pickear» y «Pickeados» de /prepacking (sin la asignación automática por empleado)
+- [ ] usp_obtenerdstrazabilidadnew
+- [ ] usp_obtenerdsunitarizador
+- [ ] usp_obtenerdsunitarizador_xpedido
+- [ ] usp_obtenerdszonas_o_ubicaciones
+- [ ] usp_obtenereanvigencia
+- [ ] usp_obtenerentidaddeconsultasaleatorias
+- [ ] usp_obtenerentidadservidorftp
+- [ ] usp_obtenerentidadservidorsmtp
+- [x] usp_obtenerhistoriastatuscalidadlote — hecho: historial de estados en la ficha del lote
+- [x] usp_obtenerinfoguiabypicking — hecho: datos de la guía en su ficha (imprimible)
+- [ ] usp_obtenerinformaciondecontenidoxeandecaja
+- [ ] usp_obtenerinformacionxcajapick
+- [x] usp_obteneritemspedidosinprepacking — CRUD generado: lo cubre Prisma
+- [ ] usp_obtenerlistadeordenesdedespachoenvia
+- [ ] usp_obtenermapaprincipaldebodega
+- [ ] usp_obtenermetacadenaxid
+- [ ] usp_obtenermiembrosdeobjetobd
+- [ ] usp_obtenermovimientodecajapick
+- [ ] usp_obtenernuevonumdecaja_aduananew
+- [ ] usp_obtenernumerodepickingxeandecaja
+- [ ] usp_obtenerordendeproduccionconcliente
+- [ ] usp_obtenerordenesproduccionpendientesporprepacking
+- [x] usp_obtenerpedidoconcliente — hecho: cliente y sede del pedido en su ficha
+- [ ] usp_obtenerpedidospickingconsolidado
+- [x] usp_obtenerprepackingcondatoscliente — CRUD generado: lo cubre Prisma
+- [ ] usp_obtenerprepackingscancelables
+- [ ] usp_obtenerprepackingsenvia_display
+- [x] usp_obtenerprepackingsrelacionadoconordenydatoscliente — CRUD generado: lo cubre Prisma
+- [ ] usp_obtenerrangocajascontenedoras
+- [ ] usp_obtenerregistrosanitarioxean
+- [ ] usp_obtenertblplandespachos
+- [ ] usp_obtenertblplandespachosnotfecha
+- [ ] usp_obtenertrazalotesxreferencia_3021
+- [ ] usp_obtenervalornetodefactursinretenciones
+- [ ] usp_obtenerzonasporbodega
+- [ ] usp_obtenerzonaswmsporbodega
+- [ ] usp_pics_1_lotes
+- [ ] usp_pics_2_aduana
+- [x] usp_recarga_t_temporar_encabezado_conteo — hecho: reconteo con las cajas con diferencia
+- [x] usp_registrodeguiagenerada — hecho: generar la guía con el consecutivo del transportador al despachar (/despacho/despachar/[picking])
+- [ ] usp_rptidentificacioncajas
+- [ ] usp_rptrangocajasxtiporeporte_zpl
+- [ ] usp_status_recepcionextendida
+- [ ] usp_t_clientes_direcciones_obtenerproveedoresactivos
+- [ ] usp_t_clientes_getbyid
+- [ ] usp_t_detalle_prepack_eliminarpornumpicking
+- [x] usp_t_detalle_prepack_obtenerpornumpicking — hecho: ruta de picking en la ficha del picking
+- [ ] usp_t_detalle_prepack_obtenerpornumpicking_display
+- [x] usp_t_detalle_prepack_obtenerpornumpicking_displayparaaduana — hecho: tabla «Lo pickeado» de la ficha de aduana
+- [x] usp_t_detalle_prepack_obtenerpornumpicking_displayparaaduana_lotes — hecho: lotes en los renglones de las cajas
+- [x] usp_t_detalle_referencia_getbyid — hecho: ficha de /articulos/[ean]
+- [ ] usp_t_detalle_referencia_obtenerporinventariable
+- [ ] usp_t_encabezado_prepack_actualizarestado
+- [x] usp_t_encabezado_prepack_getbyid — hecho: ficha del picking
+- [x] usp_t_encabezado_prepack_obtenerparaaduana_display — hecho: pestaña «Por aduanar» de /aduana
+- [ ] usp_t_encabezado_prepack_obtenerpedidoasociado
+- [ ] usp_t_encabezado_prepack_obtenerporvalida
+- [ ] usp_t_encabezado_prepack_obtenerproximo
+- [ ] usp_t_entradas_ras_getbyid
+- [x] usp_t_guias_generadas_obtenerporpedido — hecho: guías de un pedido en /despacho/guias
+- [x] usp_t_guias_generadas_obtenerporprepacking — hecho: guía de un picking en su ficha
+- [ ] usp_t_ins_bodega_getbyid
+- [ ] usp_t_ins_descripciones_getbyid
+- [ ] usp_t_ins_descripciones_getbyid_customized
+- [ ] usp_t_ins_genericos_getbyreferencia
+- [ ] usp_t_ins_mapa_obtenerbodegas
+- [ ] usp_t_ins_mapas_wms_getbyid
+- [x] usp_t_ins_referencias_getbyid — hecho: ficha de /articulos/referencias/[codigo]
+- [ ] usp_t_ins_ubicaciones_fijas_mp_obtenerporbodega
+- [ ] usp_t_ins_ubicaciones_fijas_mp_obtenerporbodegaarticulo
+- [ ] usp_t_ins_wms_obtenererporzonapadre
+- [ ] usp_t_ins_wms_obtenerpornamearea
+- [ ] usp_t_materiales_color_getbyid_inventariable
+- [ ] usp_t_materiales_por_orden_getbyid
+- [ ] usp_t_materiales_por_orden_obtenerconubicacionesfijas2
+- [ ] usp_t_materiales_por_orden_obtenerparawms
+- [ ] usp_t_narth_encabezado_pedido_actualizarinfoprepacking
+- [ ] usp_t_narth_encabezado_pedido_actualizarinfoprepacking_reload
+- [x] usp_t_narth_encabezado_pedido_getbyid — hecho: ficha del pedido (incluye el picking asignado)
+- [ ] usp_t_narth_encabezado_pedido_obtenerporidpicking
+- [x] usp_t_narth_serie_pedido_actualizarreserva — hecho: idem, por línea
+- [x] usp_t_narth_serie_pedido_getbyid — hecho: líneas en la ficha del pedido
+- [ ] usp_t_narth_serie_pedido_obtenerconubicacionesfijas
+- [x] usp_t_narth_serie_pedido_obtenerparawms — hecho: líneas con cantidad, precio y disponible; faltan las ubicaciones fijas (módulo Picking)
+- [ ] usp_t_pdto_terminado_actualizarexistencia
+- [ ] usp_t_pdto_terminado_cantidadentrada
+- [ ] usp_t_pdto_terminado_obtenerexistencias
+- [ ] usp_t_serie_pedido_actualizarinfoprepacking
+- [ ] usp_t_serie_pedido_nueva_obtenerimpuestos
+- [ ] usp_t_seriepedido_getbyid
+- [x] usp_t_ssccxcaja_obtenerporsscc — hecho: etiquetas de despacho por picking (/pallets)
+- [x] usp_t_ssccxcaja_obtenerporssccxnumpicking — hecho: etiquetas de despacho por picking (/pallets)
+- [ ] usp_t_transportador_getbyid
+- [x] usp_ta_facturacion_obtenerporpicking — hecho: el número de factura se registra como dato opcional de la guía
+- [x] usp_terminaraduanadepicking_aduananew — hecho: «Terminar aduana»: empacado = pickeado por artículo; saldo de aduana, lotes y valida 7
+- [ ] usp_terminaraduanaderecepcion
+- [ ] usp_validarcodigocajamaster
+- [ ] usp_validarcodigocajamaster_recepcion
+- [ ] usp_validardocrecepcionporaduanar
+- [ ] usp_validarunitarizadorporaduanar
+- [x] usp_wms_autoaduanaxpicking — hecho: «Empacar todo en una caja» y «Empacar como se pickeó»
+- [ ] usp_wms_getdetalleprepack
+- [x] usp_wms_getdetalleprepack_fast — hecho: asignación de cajas del picking (FEFO + ruta); no hay «recibo» como ubicación de relleno: lo que no alcanza queda como faltante
+
+- [x] spi_t_ssccxcaja_customized2 — hecho: pickeo de una línea (/prepacking/[id]): descuenta la caja, libera la reserva, registra el SSCC y marca la línea; permite otra caja y pickeo corto

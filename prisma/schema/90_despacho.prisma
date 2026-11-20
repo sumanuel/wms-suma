@@ -1,0 +1,168 @@
+// GENERADO por scripts/legado/convertir_tablas.py desde el DDL de CO_DLL_BASE. No editar a mano: edite el conversor
+// o muévase a un modelo propio cuando el módulo se rediseñe. Los campos se llaman como la columna (snake_case).
+
+
+/// Legado: [dbo].[T_Codigos_Ciudad_DANE]
+model CodigosCiudadDane {
+  codigo_dane String @id @db.VarChar(50)
+  codigoc     String? @db.Char(10)
+  ciudad      String? @db.VarChar(50)
+  depto       String? @db.VarChar(50)
+  @@map("t_codigos_ciudad_dane")
+}
+
+/// Legado: [dbo].[T_DepartamentoMunicipio_DANE] · clave sustituta wms_id
+model DepartamentomunicipioDane {
+  wms_id BigInt @id @default(autoincrement())
+  codigodepartamento String? @db.VarChar(50)
+  nombredepartamento String? @db.VarChar(50)
+  codigomunicipio    String? @db.VarChar(50)
+  nombremunicipio    String? @db.VarChar(50)
+  @@map("t_departamentomunicipio_dane")
+}
+
+/// Legado: [dbo].[T_DESPACHOS]
+model Despachos {
+  reporte            Int @id @default(autoincrement())
+  npedido            String? @db.VarChar(50)
+  cliente            String? @db.VarChar(80)
+  fecha_pedido       DateTime? @db.Timestamp(3)
+  fecha_despacho     DateTime? @db.Timestamp(3)
+  fecha_desp         DateTime? @db.Timestamp(3)
+  numero_guia        String? @db.VarChar(50)
+  transportador      String? @db.VarChar(50)
+  cant_de_cajas      Int?
+  observacion        String? @db.Text
+  direcc_destino     String? @db.VarChar(50)
+  completo           Int? @default(0)
+  parcial            Int? @default(0)
+  factura            Int
+  valor_f            Int?
+  hora               String? @db.VarChar(50)
+  obser_servi_pedido String? @db.Text
+  remision           String? @db.VarChar(50)
+  placa              String? @db.VarChar(20)
+  ciudad             String? @db.VarChar(50)
+  factura2           Int?
+  valor_f2           Int?
+  factura3           Int?
+  valor_f3           Int?
+  valor_flete        Int?
+  cant_total         Int?
+  nit                String? @db.VarChar(50)
+  item               Int?
+  zona               String? @db.VarChar(50)
+  operador           String? @db.VarChar(50)
+  fecha_edicion      DateTime? @db.Timestamp(3)
+  factura4           Int?
+  valor_f4           Int?
+  factura5           Int?
+  valor_f5           Int?
+  valor_declarado    Int? @default(0)
+  tipocaja1          Int? @default(0)
+  tipocaja2          Int? @default(0)
+  tipocaja3          Int? @default(0)
+  fact_firm          Int? @default(0)
+  fecha_transporte   DateTime? @db.Timestamp(3)
+  @@map("t_despachos")
+}
+
+/// Legado: [dbo].[T_Guias_Generadas]
+model GuiasGeneradas {
+  num_guia                   String @db.VarChar(50)
+  transportador              String @db.VarChar(50)
+  remitente                  String? @db.VarChar(100)
+  nit_remitente              String? @db.VarChar(50)
+  ciudad_origen              String? @db.VarChar(50)
+  cod_ciud_origen            String? @db.VarChar(50)
+  fecha_despacho             DateTime? @db.Timestamp(3)
+  destinatario               String? @db.VarChar(100)
+  nit_destinatario           String? @db.VarChar(50)
+  direccion                  String? @db.VarChar(100)
+  telefono                   String? @db.VarChar(50)
+  cod_cliente                Int? @default(0)
+  ciudad_destino             String? @db.VarChar(50)
+  cod_ciud_destino           String? @db.VarChar(50)
+  departamento               String? @db.VarChar(50)
+  unidades                   Float? @default(0)
+  kilos                      Float? @default(0)
+  volumen                    Float? @default(0)
+  valor_mercancia            Float? @default(0)
+  valor_declarado            Float? @default(0)
+  total                      Float? @default(0)
+  anulada                    Int? @default(0)
+  impresa                    Int? @default(0)
+  otro                       Int? @default(0)
+  comentario                 String? @db.VarChar(500)
+  pedido                     String @db.VarChar(100)
+  division                   Int? @default(0)
+  producto                   String? @db.VarChar(50) @default("MCIA")
+  cuenta                     String? @db.VarChar(50) @default("CC")
+  acuerdo                    String? @db.VarChar(50)
+  divisionremi               String? @db.VarChar(50) @default("1")
+  id_reporte                 Float? @default(0)
+  caja1                      Float? @default(0)
+  caja2                      Float? @default(0)
+  num_envio                  Int? @default(0)
+  auto                       Int @id @default(autoincrement())
+  prepackingid               Int
+  factura                    String? @db.VarChar(50)
+  empleado                   Int?
+  enviado                    Boolean?
+  consecdia                  Int? @db.SmallInt
+  shorturl                   String? @db.VarChar(500)
+  fecha_entregacliente       DateTime? @db.Timestamp(3)
+  id_empleado                Int?
+  rel_t_encabezado_prepack_1 EncabezadoPrepack @relation("fk_t_guias_generadas", fields: [prepackingid], references: [idmovimiento], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_guias_generadas")
+  rel_t_transportador_2      Transportador @relation("fk_t_guias_generadas_transportador", fields: [transportador], references: [transportador], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_guias_generadas_transportador")
+  @@map("t_guias_generadas")
+}
+
+/// Legado: [dbo].[T_ins_TarifasDeTransporte]
+model InsTarifasdetransporte {
+  id                Int @id @default(autoincrement())
+  id_transportadora String @db.VarChar(50)
+  id_codciuorigen   String? @db.VarChar(20)
+  id_codciudestino  String? @db.VarChar(20)
+  tipodepoblacion   String? @db.VarChar(20)
+  valor             Decimal? @db.Decimal(18, 2)
+  @@map("t_ins_tarifasdetransporte")
+}
+
+/// Legado: [dbo].[t_totalCode_guiaGenerada]
+model TotalcodeGuiagenerada {
+  id       Int @id @default(autoincrement())
+  orden    Int?
+  sku      String? @db.VarChar(50)
+  cantidad Decimal? @db.Decimal(18, 2)
+  guia     String? @db.VarChar(50)
+  picking  Int?
+  fecha    DateTime? @db.Timestamp(3)
+  @@map("t_totalcode_guiagenerada")
+}
+
+/// Legado: [dbo].[T_transportador]
+model Transportador {
+  transportador                      String @id @db.VarChar(50)
+  direccion                          String? @db.VarChar(50)
+  telefono1                          String? @db.VarChar(50)
+  telefono2                          String? @db.VarChar(50)
+  valor_acuerdo                      Int?
+  estado                             Int? @default(0)
+  nit_transportador                  String? @db.Char(12)
+  peso                               Int? @default(0)
+  peso2                              Float? @default(0)
+  pesovol1                           Float? @default(0)
+  pesovol2                           Float? @default(0)
+  reporte                            String? @db.VarChar(50)
+  vinculohttp                        String? @db.VarChar(150)
+  restriccioncarga                   Float?
+  num_guia                           String? @db.VarChar(50) @default("0")
+  usuario                            String? @db.VarChar(50)
+  contrasena                         Bytes?
+  codigocuentacliente                String? @db.VarChar(50)
+  bodega                             String? @db.VarChar(20)
+  hijos_t_guias_generadas_2          GuiasGeneradas[] @relation("fk_t_guias_generadas_transportador")
+  hijos_t_ins_valoresfijosxempaque_2 InsValoresfijosxempaque[] @relation("fk_t_ins_valoresfijosxempaque_transportadora")
+  @@map("t_transportador")
+}

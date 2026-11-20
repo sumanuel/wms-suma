@@ -1,0 +1,38 @@
+import type { Delegado, Maestro } from "./tipos";
+
+export const cajas: Maestro = {
+  id: "cajas",
+  modulo: "cajas",
+  ruta: "/cajas",
+  entidad: "tiposdecaja",
+  singular: "tipo de caja",
+  plural: "tipos de caja",
+  genero: "el",
+  delegado: (db) => db.tiposdecaja as unknown as Delegado,
+  clave: { campo: "tipo_caja" },
+  campos: [
+    { nombre: "tipo_caja", etiqueta: "Código del tipo de caja", tipo: "texto", max: 50, requerido: true, soloCrear: true, ayuda: "No se puede cambiar después." },
+    { nombre: "descripcioncaja", etiqueta: "Descripción", tipo: "texto", max: 100, ancho: 2 },
+    { nombre: "largo", etiqueta: "Largo", tipo: "decimal" },
+    { nombre: "ancho", etiqueta: "Ancho", tipo: "decimal" },
+    { nombre: "alto", etiqueta: "Alto", tipo: "decimal" },
+    { nombre: "volumen", etiqueta: "Volumen", tipo: "decimal" },
+    { nombre: "peso", etiqueta: "Peso", tipo: "decimal" },
+    { nombre: "factor", etiqueta: "Factor", tipo: "entero" },
+  ],
+  columnas: [
+    { id: "tipo", titulo: "Tipo de caja", campo: "tipo_caja", fija: true },
+    { id: "descripcion", titulo: "Descripción", campo: "descripcioncaja" },
+    { id: "largo", titulo: "Largo", campo: "largo", alinear: "derecha" },
+    { id: "ancho", titulo: "Ancho", campo: "ancho", alinear: "derecha" },
+    { id: "alto", titulo: "Alto", campo: "alto", alinear: "derecha" },
+    { id: "volumen", titulo: "Volumen", campo: "volumen", alinear: "derecha" },
+    { id: "peso", titulo: "Peso", campo: "peso", alinear: "derecha" },
+    { id: "factor", titulo: "Factor", campo: "factor", alinear: "derecha", oculta: true },
+  ],
+  busqueda: { texto: "Buscar por tipo o descripción", campos: ["tipo_caja", "descripcioncaja"] },
+  orden: { columna: "tipo", dir: "asc" },
+  titulo: (f) => String(f.tipo_caja),
+  descripcion: (f) => String(f.descripcioncaja ?? ""),
+  mensajeDependientes: "No se puede eliminar: hay cajas o valores logísticos que usan este tipo.",
+};

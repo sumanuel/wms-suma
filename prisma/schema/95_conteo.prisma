@@ -1,0 +1,68 @@
+// GENERADO por scripts/legado/convertir_tablas.py desde el DDL de CO_DLL_BASE. No editar a mano: edite el conversor
+// o muévase a un modelo propio cuando el módulo se rediseñe. Los campos se llaman como la columna (snake_case).
+
+
+/// Legado: [dbo].[T_Temporal_ConteoWMS]
+model TemporalConteowms {
+  prodean              String @db.VarChar(50)
+  bod                  String @db.VarChar(15)
+  caja                 Float
+  idconteo             Int
+  kantidadteo          Float? @default(0)
+  cantidadcontab       Float? @default(0)
+  ubicacion            String? @db.VarChar(20) @default("")
+  idconsecutivo        Int @id @default(autoincrement())
+  estado               Int?
+  descripcion          String? @db.VarChar(150)
+  id_empleado          Int?
+  fechacuenta          DateTime? @db.Timestamp(3)
+  fin_qtyteorico       Decimal? @db.Decimal(18, 3) @default(0)
+  fin_qtycontabilizado Decimal? @db.Decimal(18, 3) @default(0)
+  fin_fecha            DateTime? @db.Timestamp(3)
+  cantidadteoricaerp   Decimal? @db.Decimal(14, 3)
+  fechateoricoerp      DateTime? @db.Timestamp(3)
+  fechalectura         DateTime? @db.Timestamp(3)
+  estadoajuste         Int?
+  nro                  Int?
+  estado_unifica       Int?
+  rel_t_entradas_ras_1 EntradasRas @relation("fk_t_temporal_conteowms", fields: [caja], references: [cajano], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_temporal_conteowms")
+  @@index([idconteo], map: "ix_t_temporal_conteowms_idconteo")
+  @@index([caja], map: "ix_t_temporal_conteowms_caja")
+  @@map("t_temporal_conteowms")
+}
+
+/// Legado: [dbo].[T_Temporal_ConteoWMS_multiproducto]
+model TemporalConteowmsMultiproducto {
+  id                   Int @default(autoincrement())
+  idconteo             Int
+  caja                 Float
+  ubicacion            String? @db.VarChar(20)
+  barcode              String @db.VarChar(50)
+  cantidadteorica      Int? @default(0)
+  cantidadcontab       Int? @default(0)
+  fin_qtyteorico       Int? @default(0)
+  fin_qtycontab        Int? @default(0)
+  fecha_lectura        DateTime? @db.Timestamp(3)
+  fecha_fin            DateTime? @db.Timestamp(3)
+  estado               Int? @default(0)
+  estadoajuste         Int? @default(0)
+  ean                  String @db.VarChar(50)
+  rel_t_entradas_ras_1 EntradasRas @relation("fk_t_temporal_conteowms_multiproducto_t_entradas_r", fields: [caja], references: [cajano], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_temporal_conteowms_multiproducto_t_entradas_ras")
+
+  @@id([idconteo, caja, barcode])
+  @@map("t_temporal_conteowms_multiproducto")
+}
+
+/// Legado: [dbo].[T_Temporar_Encabezado_ConteoWMS]
+model TemporarEncabezadoConteowms {
+  idconteo    Int @id
+  fecha       DateTime? @db.Timestamp(3)
+  programa    String? @db.VarChar(50)
+  realiza     String? @db.VarChar(50)
+  tipoconteo  Int? @default(1)
+  productoean String? @db.VarChar(50)
+  estado      Int?
+  lenguajesql String? @db.VarChar(500)
+  bodega      String? @db.VarChar(50)
+  @@map("t_temporar_encabezado_conteowms")
+}

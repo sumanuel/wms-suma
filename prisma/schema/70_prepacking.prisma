@@ -1,0 +1,317 @@
+// GENERADO por scripts/legado/convertir_tablas.py desde el DDL de CO_DLL_BASE. No editar a mano: edite el conversor
+// o muévase a un modelo propio cuando el módulo se rediseñe. Los campos se llaman como la columna (snake_case).
+
+
+/// Legado: [dbo].[t_BoxPlan]
+model Boxplan {
+  id            Int @id @default(autoincrement())
+  picking       Int?
+  tipocaja      String? @db.VarChar(2)
+  cantidad      Int?
+  volabsorbido  Int?
+  transportador String? @db.VarChar(100)
+  vlxkilo       Decimal? @db.Decimal(14, 2)
+  @@map("t_boxplan")
+}
+
+/// Legado: [dbo].[t_caja_contenedora]
+model CajaContenedora {
+  id       Int @id @default(autoincrement())
+  empleado String? @db.VarChar(50)
+  fecha    DateTime? @db.Timestamp(3)
+  bodega   String? @db.VarChar(10)
+  @@map("t_caja_contenedora")
+}
+
+/// Legado: [dbo].[T_Detalle_Prepack]
+model DetallePrepack {
+  iddetpripack               Int @id @default(autoincrement())
+  numpicking                 Int?
+  conscaja                   String? @db.VarChar(50)
+  product                    String? @db.VarChar(50)
+  cant                       Decimal? @db.Decimal(16, 4) @default(0)
+  fecha                      DateTime? @db.Timestamp(3)
+  lothe                      String? @db.VarChar(50)
+  origen                     String? @db.VarChar(150)
+  precioventa                Float? @default(1)
+  bonificacion               Float? @default(0)
+  diponepick                 Decimal? @db.Decimal(16, 4) @default(0)
+  saldoaduana                Decimal? @db.Decimal(16, 4) @default(0)
+  bode                       String? @db.VarChar(20)
+  cmv                        Float? @default(0)
+  pedido                     String? @db.VarChar(50)
+  listapre                   Int?
+  descuento                  Float?
+  estadolinea                Int? @default(0)
+  cospromedio                Float? @default(0)
+  alerta                     String? @db.VarChar(50)
+  descripcion                String? @db.VarChar(250)
+  ref                        String? @db.VarChar(50)
+  transaccion                String? @db.VarChar(50)
+  zonapiso                   String? @db.VarChar(20)
+  ubicacion_asig             String? @db.VarChar(20)
+  cargue                     String? @db.VarChar(50)
+  barcode                    String? @db.VarChar(50)
+  bl                         String? @db.VarChar(50)
+  rel_t_encabezado_prepack_1 EncabezadoPrepack? @relation("fk_t_detalle_prepack_t_encabezado_prepack", fields: [numpicking], references: [idmovimiento], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_detalle_prepack_t_encabezado_prepack")
+  @@map("t_detalle_prepack")
+}
+
+/// Legado: [dbo].[T_Detalle_Prepack_xLineaPedido]
+model DetallePrepackXlineapedido {
+  iddetpripack               Int @id @default(autoincrement())
+  numpicking                 Int?
+  conscaja                   Int?
+  product                    String? @db.VarChar(50)
+  cant                       Decimal? @db.Decimal(16, 4) @default(0)
+  fecha                      DateTime? @db.Timestamp(3)
+  lothe                      String? @db.VarChar(20)
+  origen                     String? @db.VarChar(150)
+  precioventa                Float? @default(1)
+  bonificacion               Float? @default(0)
+  diponepick                 Decimal? @db.Decimal(16, 4) @default(0)
+  saldoaduana                Decimal? @db.Decimal(16, 4) @default(0)
+  bode                       String? @db.VarChar(20)
+  cmv                        Float? @default(0)
+  pedido                     String? @db.VarChar(50)
+  listapre                   Int?
+  descuento                  Float?
+  estadolinea                Int? @default(0)
+  cospromedio                Float? @default(0)
+  alerta                     String? @db.VarChar(50)
+  descripcion                String? @db.VarChar(150)
+  ref                        String? @db.VarChar(50)
+  idempleadoaduana           Int?
+  fechaaduana                DateTime? @db.Timestamp(3)
+  bl                         String? @db.VarChar(50)
+  barcode                    String? @db.VarChar(50)
+  rel_t_encabezado_prepack_1 EncabezadoPrepack? @relation("fk_t_detalle_prepack_xlineapedido_t_encabezado_pre", fields: [numpicking], references: [idmovimiento], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_detalle_prepack_xlineapedido_t_encabezado_prepack")
+  @@map("t_detalle_prepack_xlineapedido")
+}
+
+/// Legado: [dbo].[T_encabezado_Prepack]
+model EncabezadoPrepack {
+  idmovimiento                           Int @id
+  picking                                Int?
+  fecha                                  DateTime? @db.Timestamp(3)
+  turno                                  Int?
+  seccion                                Int?
+  modulo                                 Int?
+  empacador                              Int?
+  valida                                 Int? @default(0)
+  facturado                              Int? @default(0)
+  nitprepack                             String? @db.VarChar(50)
+  consmov                                Int?
+  npedid                                 String? @db.VarChar(50)
+  nom_empacador                          String? @db.VarChar(50)
+  pedido                                 String? @db.VarChar(50)
+  ok                                     Int? @default(0)
+  bodegapicking                          String @db.VarChar(15)
+  impreso                                Int? @default(0)
+  observpepack                           String? @db.VarChar(250)
+  transportador                          String? @db.VarChar(50)
+  aduanadopor                            String? @db.VarChar(50)
+  hijos_t_detalle_prepack_1              DetallePrepack[] @relation("fk_t_detalle_prepack_t_encabezado_prepack")
+  hijos_t_detalle_prepack_xlineapedido_1 DetallePrepackXlineapedido[] @relation("fk_t_detalle_prepack_xlineapedido_t_encabezado_pre")
+  hijos_t_encabezado_prepack_cargue_1    EncabezadoPrepackCargue[] @relation("fk_t_encabez_picki_04f1402b")
+  hijos_t_encabezado_prepack_ext_1       EncabezadoPrepackExt[] @relation("fk_t_encabezado_prepack_ext")
+  hijos_t_guias_generadas_1              GuiasGeneradas[] @relation("fk_t_guias_generadas")
+  hijos_t_ssccxcaja_1                    Ssccxcaja[] @relation("fk_t_ssccxcaja_t_encabezado_prepack")
+  @@map("t_encabezado_prepack")
+}
+
+/// Legado: [dbo].[t_encabezado_prepack_cargue]
+model EncabezadoPrepackCargue {
+  id                         Int @id @default(autoincrement())
+  bigpicking                 String @db.VarChar(20)
+  picking                    Int
+  cargue                     String @db.VarChar(20)
+  unitarizador               String @db.VarChar(20)
+  fecha                      DateTime @db.Timestamp(3)
+  idempleado                 Int
+  zonapiso                   String @db.VarChar(10)
+  rel_t_encabezado_prepack_1 EncabezadoPrepack @relation("fk_t_encabez_picki_04f1402b", fields: [picking], references: [idmovimiento], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_encabez_picki_04f1402b")
+  @@unique([cargue, bigpicking, unitarizador, zonapiso])
+  @@map("t_encabezado_prepack_cargue")
+}
+
+/// Legado: [dbo].[t_encabezado_prepack_ext]
+model EncabezadoPrepackExt {
+  id                         Int @id @default(autoincrement())
+  picking                    Int
+  f_pedido                   DateTime? @db.Timestamp(3)
+  tipodcto                   String? @db.VarChar(30)
+  tipopedido                 String? @db.VarChar(50)
+  pedidoerp                  String? @db.VarChar(50)
+  codcliente                 String? @db.VarChar(50)
+  nombrecliente              String? @db.VarChar(250)
+  contacto                   String? @db.VarChar(100)
+  email                      String? @db.VarChar(200)
+  notas                      String? @db.VarChar(1000)
+  ciudad_despacho            String? @db.VarChar(150)
+  pais_despacho              String? @db.VarChar(150)
+  departamento_despacho      String? @db.VarChar(150)
+  sucursal_despacho          String? @db.VarChar(150)
+  direccion_despacho         String? @db.VarChar(500)
+  idsucursal                 String? @db.VarChar(50)
+  ciudad                     String? @db.VarChar(150)
+  pedidorelacionado          String? @db.VarChar(50)
+  cargue                     String? @db.VarChar(50)
+  rel_t_encabezado_prepack_1 EncabezadoPrepack @relation("fk_t_encabezado_prepack_ext", fields: [picking], references: [idmovimiento], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_encabezado_prepack_ext")
+  @@map("t_encabezado_prepack_ext")
+}
+
+/// Legado: [dbo].[t_ins_valoresFijosxEmpaque]
+model InsValoresfijosxempaque {
+  id                    Int @id @default(autoincrement())
+  tipodecaja            String @db.VarChar(50)
+  componentecosto       Decimal? @db.Decimal(18, 2)
+  costo                 Decimal? @db.Decimal(18, 2)
+  transportadora        String? @db.VarChar(50)
+  rel_tiposdecaja_1     Tiposdecaja @relation("fk_t_ins_valoresfijosxempaque", fields: [tipodecaja], references: [tipo_caja], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_ins_valoresfijosxempaque")
+  rel_t_transportador_2 Transportador? @relation("fk_t_ins_valoresfijosxempaque_transportadora", fields: [transportadora], references: [transportador], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_ins_valoresfijosxempaque_transportadora")
+  @@map("t_ins_valoresfijosxempaque")
+}
+
+/// Legado: [dbo].[T_ins_VolumenesxEAN]
+model InsVolumenesxean {
+  gtin                  String @id @db.VarChar(50)
+  imagen                Bytes?
+  figurageometrica      String? @db.VarChar(70)
+  radio                 Decimal? @db.Decimal(18, 5)
+  altura                Decimal? @db.Decimal(18, 5)
+  areabase              Decimal? @db.Decimal(18, 5)
+  longitudarista        Decimal? @db.Decimal(18, 5)
+  volumen               Decimal? @db.Decimal(18, 5)
+  areatotal             Decimal? @db.Decimal(18, 5)
+  ancho                 Decimal? @db.Decimal(18, 5)
+  largo                 Decimal? @db.Decimal(18, 5)
+  porcentajedesperdicio Decimal? @db.Decimal(18, 5)
+  @@map("t_ins_volumenesxean")
+}
+
+/// Legado: [dbo].[T_Pallets]
+model Pallets {
+  cajapallet        Float
+  cajaasociada      String? @db.VarChar(20)
+  idpallet          Int @id @default(autoincrement())
+  estado            Int?
+  fechacrea         DateTime? @db.Timestamp(3) @default(now())
+  cantidad          Decimal? @db.Decimal(18, 5)
+  canitidad         Decimal? @db.Decimal(14, 3)
+  documentoasociado String? @db.VarChar(30)
+  idempleado        Int?
+  @@map("t_pallets")
+}
+
+/// Legado: [dbo].[T_SSCCxCaja]
+model Ssccxcaja {
+  idprepack                  Int?
+  eancontenido               String? @db.VarChar(50)
+  eancaja                    String? @db.VarChar(20)
+  numcajade                  Int?
+  cantidad                   Decimal? @db.Decimal(16, 4)
+  id                         Int?
+  iditemsscc                 Int @id @default(autoincrement())
+  lote                       String? @db.VarChar(50) @default("")
+  idcaja                     Int?
+  sscc                       Int? @default(0)
+  tipocaja                   String? @db.Char(1)
+  cantidadaduanada           Decimal? @db.Decimal(16, 4)
+  fecharegistro              DateTime? @db.Timestamp(3)
+  marca                      String? @db.VarChar(50)
+  pesocaja                   String? @db.VarChar(20)
+  cantidaddestelle           Decimal? @db.Decimal(18, 3)
+  ubicacion                  String? @db.VarChar(20)
+  ubicacion_sale             String? @db.VarChar(20)
+  listapre                   Int?
+  estado                     Int?
+  rel_t_encabezado_prepack_1 EncabezadoPrepack? @relation("fk_t_ssccxcaja_t_encabezado_prepack", fields: [idprepack], references: [idmovimiento], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_ssccxcaja_t_encabezado_prepack")
+  @@unique([id])
+  @@map("t_ssccxcaja")
+}
+
+/// Legado: [dbo].[tbltextoimprimezpl]
+model Tbltextoimprimezpl {
+  textoimprime    String? @db.Text
+  campo1          String? @db.VarChar(50)
+  campo2          String? @db.VarChar(50)
+  campo3          String? @db.VarChar(50)
+  idempleado      Int?
+  codigo_dinamica String? @db.VarChar(50)
+  estadoimprime   Int?
+  id              Int @id @default(autoincrement())
+  estado          Int?
+  fecha           DateTime? @db.Timestamp(3) @default(now())
+  @@map("tbltextoimprimezpl")
+}
+
+/// Legado: [dbo].[TGG_T_reg_MovimientosDeCaja]
+model TggTRegMovimientosdecaja {
+  id                Int @id @default(autoincrement())
+  caja              Float
+  ubicacion         String? @db.VarChar(20)
+  fecha             DateTime @db.Timestamp(3)
+  idempleado        Int
+  transaccion       String? @db.VarChar(20)
+  ubicacion_inicial String? @db.VarChar(20)
+  saldo             Decimal? @db.Decimal(16, 4)
+  productoean       String? @db.VarChar(50)
+  loteproveedor     String? @db.VarChar(30)
+  bodega_inicial    String? @db.VarChar(30)
+  bodega_final      String? @db.VarChar(30)
+  pallet            Int?
+  documentooc       String? @db.VarChar(50)
+  tipodocto         String? @db.VarChar(30)
+  @@map("tgg_t_reg_movimientosdecaja")
+}
+
+/// Legado: [dbo].[TiposDeCaja]
+model Tiposdecaja {
+  tipo_caja                          String @id @db.VarChar(50)
+  peso                               Float?
+  alto                               Float?
+  ancho                              Float?
+  largo                              Float?
+  volumen                            Float?
+  descripcioncaja                    String? @db.VarChar(100)
+  factor                             Int?
+  hijos_t_aduana_wms_pos_1           AduanaWmsPos[] @relation("fk_t_aduana_wms_pos")
+  hijos_t_ins_valoresfijosxempaque_1 InsValoresfijosxempaque[] @relation("fk_t_ins_valoresfijosxempaque")
+  @@map("tiposdecaja")
+}
+
+/// Legado: [dbo].[T_Vbles_LogisticasxCaja]
+model VblesLogisticasxcaja {
+  id                      Int @default(autoincrement())
+  cajano                  String @db.VarChar(20)
+  vbl1                    String? @db.VarChar(100)
+  vbl2                    String? @db.VarChar(100)
+  vbl3                    String? @db.VarChar(100)
+  vbl4                    String? @db.VarChar(100)
+  vbl5                    String? @db.VarChar(100)
+  codean                  String @db.VarChar(50)
+  rel_t_maestro_lote_pt_1 MaestroLotePt @relation("fk_t_vbles_logisticasxcaja", fields: [cajano, codean], references: [loteproveedor, codean], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_vbles_logisticasxcaja")
+
+  @@id([cajano, codean])
+  @@map("t_vbles_logisticasxcaja")
+}
+
+/// Legado: [dbo].[T_WMS_Temporal_Asigna_Prepacking] · clave sustituta wms_id
+model WmsTemporalAsignaPrepacking {
+  wms_id BigInt @id @default(autoincrement())
+  idpicking Float?
+  kaja      Float?
+  ubicacion String? @db.VarChar(150)
+  canti     Float?
+  lote      String? @db.VarChar(50)
+  ean       String? @db.VarChar(50)
+  pedido    String? @db.VarChar(50)
+  pventaped Float?
+  bonif     Float?
+  completa  Int?
+  bode      String? @db.VarChar(50)
+  cmvped    Float?
+  @@index([idpicking], map: "ix_t_wms_temporal_asigna_prepacking_idpicking")
+  @@map("t_wms_temporal_asigna_prepacking")
+}

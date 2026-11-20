@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+@theme {
+  /* #FE4819 (el del logo) no llega a 4,5:1 con texto blanco: botones y texto usan los tonos oscuros. */
+  --color-marca: #fe4819;
+  --color-marca-fuerte: #d53c15;
+  --color-marca-texto: #c13713;
+  --color-marca-suave: #fff0ed;
+
+  --color-tinta: #18181b;
+  --color-gris-700: #3f3f46;
+  --color-gris-600: #52525b;
+  --color-gris-500: #6b6b73;
+  --color-borde: #e7e7e4;
+  --color-borde-campo: #e1e1dd;
+  --color-linea: #efefec;
+  --color-fondo: #f7f7f5;
+  --color-hover: #f3f3f1;
+  --color-neutro-suave: #f1f1ef;
+
+  --color-exito: #15803d;
+  --color-exito-suave: #ecfdf3;
+  --color-aviso: #a16207;
+  --color-aviso-suave: #fef9e7;
+  --color-error: #b91c1c;
+  --color-error-suave: #fef2f2;
+}
+
+/* La flecha nativa queda pegada al borde y cambia con cada sistema: se dibuja una propia. Cada select suma pr-9 para dejarle lugar. */
+@layer base {
+  select:not([multiple]) {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b6b73' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 1rem;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-marca);
+  outline-offset: 2px;
+}

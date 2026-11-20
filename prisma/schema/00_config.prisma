@@ -1,0 +1,18 @@
+// Esquema de CADA base de cliente. La base de control (wms_control) NO usa Prisma: ver scripts/control/.
+generator client {
+  provider = "prisma-client"
+  output   = "../../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Configuración propia del cliente (banderas, formatos de etiqueta, integraciones...). Una fila por clave.
+model Configuracion {
+  clave          String   @id
+  valor          Json
+  actualizadoEn  DateTime @default(now()) @updatedAt @map("actualizado_en") @db.Timestamptz(6)
+
+  @@map("configuracion")
+}

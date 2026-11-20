@@ -1,0 +1,4 @@
+# Columnas numeric(18,0) que se convierten a Int porque son identificadores pequeños (el conteo usa 1, 2, 3…).
+t_temporal_conteowms.idconteo: Int
+t_temporal_conteowms.idconsecutivo: Int
+t_temporar_encabezado_conteowms.idconteo: Int

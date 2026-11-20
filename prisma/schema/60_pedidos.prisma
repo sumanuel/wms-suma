@@ -1,0 +1,596 @@
+// GENERADO por scripts/legado/convertir_tablas.py desde el DDL de CO_DLL_BASE. No editar a mano: edite el conversor
+// o muévase a un modelo propio cuando el módulo se rediseñe. Los campos se llaman como la columna (snake_case).
+
+
+/// Legado: [dbo].[T_AjusteDeReserva]
+model Ajustedereserva {
+  id              Int @id @default(autoincrement())
+  autoriza        String? @db.Char(80)
+  fecha           DateTime? @db.Timestamp(3)
+  bodega          String? @db.Char(10)
+  ean             String? @db.Char(50)
+  reservaanterior Decimal? @db.Decimal(14, 2)
+  nuevareserva    Decimal? @db.Decimal(14, 2)
+  picking         Int?
+  @@map("t_ajustedereserva")
+}
+
+/// Legado: [dbo].[T_detalle_ORDEN_Compra]
+model DetalleOrdenCompra {
+  nordencompra               Int?
+  requerido                  Float?
+  material                   Float?
+  color                      String? @db.VarChar(10)
+  eanproveedores             String? @db.VarChar(50)
+  numroorden                 Int?
+  precioentra                Float?
+  iddetordcomppra            Int @id @default(autoincrement())
+  recibidok                  Float? @default(0)
+  solicitacotiza             Int? @default(0)
+  fechainvita                DateTime? @db.Timestamp(3)
+  descrive                   String? @db.VarChar(150)
+  fechcompentrega            DateTime? @db.Timestamp(3)
+  provasignado               String? @db.VarChar(15)
+  plazogana                  Int?
+  consecutivoocasignado      Float? @default(0)
+  cumplido                   Int? @default(0)
+  cantpendientexrecib        Float?
+  valormoneda                Float?
+  codigoarticulo             String? @db.VarChar(20)
+  precioderecibo             Float?
+  fechaprometidad            DateTime? @db.Timestamp(3)
+  iva                        Decimal? @db.Decimal(18, 0)
+  numerotrabajador           Int?
+  descripciondetalle         String? @db.VarChar(500)
+  codigodearancel            Int? @db.SmallInt
+  bodega                     String? @db.VarChar(10)
+  codigopais                 String? @db.VarChar(10)
+  porcdescuentocomercial     Float?
+  rel_t_detalle_referencia_1 DetalleReferencia? @relation("fk_t_detalle_orden_compra_t_detalle_referencia", fields: [eanproveedores], references: [productoean], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_detalle_orden_compra_t_detalle_referencia")
+  rel_t_orden_compra_2       OrdenCompra? @relation("fk_t_detalle_orden_compra_t_orden_compra", fields: [nordencompra], references: [numordencompra], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_detalle_orden_compra_t_orden_compra")
+  @@map("t_detalle_orden_compra")
+}
+
+/// Legado: [dbo].[T_encabezadoPedido]
+model Encabezadopedido {
+  npedido               Int @id
+  cliente               String? @db.VarChar(15)
+  fechapedido           DateTime? @db.Timestamp(3)
+  fechavence            DateTime? @db.Timestamp(3)
+  c_fact_ccord          Int?
+  c_fact_scord          Int?
+  fechafactura          DateTime? @db.Timestamp(3)
+  clientefactura        String? @db.VarChar(50)
+  recursommto           Int?
+  autoorden             Int @default(autoincrement())
+  bodterc               String? @db.VarChar(15)
+  tipopaquete           String? @db.Char(25)
+  estado                Int? @db.SmallInt @default(0)
+  rel_t_clientes_1      Clientes? @relation("fk_t_encabezadopedido_t_clientes", fields: [cliente], references: [nit], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_encabezadopedido_t_clientes")
+  hijos_t_seriepedido_1 Seriepedido[] @relation("fk_t_seriepedido_t_encabezadopedido")
+  @@map("t_encabezadopedido")
+}
+
+/// Legado: [dbo].[T_Ins_Coordenadas]
+model InsCoordenadas {
+  ubicacion         String @id @db.VarChar(20)
+  fila_piso         String @db.VarChar(10)
+  columna_piso      String @db.VarChar(10)
+  piso              String @db.VarChar(10)
+  posicion_x        String @db.VarChar(10)
+  posicion_z        String @db.VarChar(10)
+  seleccion         Boolean? @default(false)
+  bodegac           String @db.VarChar(15)
+  capcubica         Float?
+  cappeso           Float?
+  ocupacion         Int? @default(0)
+  distanciaptoref   Float? @default(0)
+  prioridadrotacion String @db.Char(10)
+  posicion_z_num    Int? @default(0)
+  orden             Int? @default(0)
+  zonapiso          String @db.VarChar(15)
+  nro               Int?
+  slt               Int?
+  new_coor          Int?
+  posicion_x_num    String? @db.VarChar(5)
+  posicion_col_num  String? @db.VarChar(5) @default("0")
+  cara              Decimal? @db.Decimal(14, 2)
+  centro            String? @db.VarChar(20)
+  tunel             Int?
+  tipo_producto     String? @db.VarChar(50)
+  @@index([bodegac], map: "ix_t_ins_coordenadas_bodegac")
+  @@map("t_ins_coordenadas")
+}
+
+/// Legado: [dbo].[t_ins_coordenadas_pods]
+model InsCoordenadasPods {
+  cajap_pods           Float
+  ubicacion            String @id @db.VarChar(20)
+  vol_ubic             String? @db.VarChar(10)
+  tipo_ubic            String? @db.VarChar(20)
+  ocupacion            Int?
+  rel_t_entradas_ras_1 EntradasRas @relation("fk_t_ins_coordenadas_pods_t_entradas_ras", fields: [cajap_pods], references: [cajano], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_ins_coordenadas_pods_t_entradas_ras")
+  @@map("t_ins_coordenadas_pods")
+}
+
+/// Legado: [dbo].[T_ins_PermisosxUsuario_TipoDeOrden]
+model InsPermisosxusuarioTipodeorden {
+  id         Int @id @default(autoincrement())
+  programa   String? @db.VarChar(80)
+  tipoo      String? @db.VarChar(80)
+  usuario    Int?
+  actualizar Boolean?
+  eliminar   Boolean?
+  consultar  Boolean?
+  adicionar  Boolean?
+  @@unique([programa, tipoo, usuario])
+  @@map("t_ins_permisosxusuario_tipodeorden")
+}
+
+/// Legado: [dbo].[T_ins_procesos]
+model InsProcesos {
+  cod_proces    Int
+  referencia    String @db.VarChar(5)
+  seccion       Int?
+  proceso       String? @db.VarChar(100)
+  maquina       String? @db.VarChar(50)
+  standar       Float?
+  vl_proceso    Float?
+  porcinvent    Float?
+  secuencia     Int?
+  ppp           Float?
+  udsmedida     String? @db.VarChar(5)
+  presentacion  String? @db.VarChar(2)
+  producto      String? @db.VarChar(50)
+  pre_producto  String? @db.VarChar(50)
+  senal         Int?
+  sw            Int?
+  cant_opera    Float?
+  observaciones String? @db.VarChar(1000)
+
+  @@id([cod_proces, referencia])
+  @@map("t_ins_procesos")
+}
+
+/// Legado: [dbo].[T_ins_tiposDeOrden]
+model InsTiposdeorden {
+  id                                  Int @id @default(autoincrement())
+  codigo                              String @db.VarChar(20)
+  descripcion                         String? @db.VarChar(50)
+  contiene_materiales                 Boolean?
+  contiene_parametros                 Boolean?
+  contabiliza_al_cierre               Boolean?
+  req_reserva                         Boolean?
+  controla_procs                      Boolean?
+  bodega_entrada_productos_fabricados String? @db.VarChar(10)
+  cod_hecho_economico                 String? @db.VarChar(20)
+  cod_comprob_contable                String? @db.VarChar(20)
+  contiene_documentos                 Boolean?
+  isfacturable                        Boolean?
+  valoriza_costo                      Boolean?
+  valoriza_precio                     Boolean?
+  valoriza_costo_promedio             Boolean?
+  valoriza_costo_ultima_compra        Boolean?
+  @@map("t_ins_tiposdeorden")
+}
+
+/// Legado: [dbo].[T_materiales_por_orden]
+model MaterialesPorOrden {
+  orden               Int?
+  material            String? @db.VarChar(50)
+  color               String? @db.VarChar(20) @default("ND")
+  procesoconsume      String? @db.VarChar(50)
+  cantidadgastada     Float? @default(0)
+  cantidadentregada   Float? @default(0)
+  abonon              Float? @default(0)
+  entregado           Int? @default(0)
+  largotrazon         Float?
+  numcapasn           Int?
+  anchotrazon         Float?
+  fecha_corten        DateTime? @db.Timestamp(3)
+  cantiproducidan     Int? @default(0)
+  observacionesn      String? @db.VarChar(500)
+  standbcon           Float? @default(0)
+  asentarn            Boolean? @default(false)
+  fechainicia         DateTime? @db.Timestamp(3) @default(now())
+  fechallega          DateTime? @db.Timestamp(3)
+  asentarcomp1        Boolean? @default(false)
+  asentarcomp2        Boolean? @default(false)
+  proveedor           String? @db.VarChar(50)
+  loterecibido        Int? @default(0)
+  thypo               String? @db.VarChar(50)
+  clase_consumo       String? @db.VarChar(50)
+  secuencia           Int? @db.SmallInt
+  num                 String? @db.VarChar(10)
+  loteempresa         String? @db.VarChar(50) @default("")
+  paquetes            Int? @default(0)
+  idenformula         String? @db.VarChar(50)
+  consumocalculado    Float? @default(0)
+  ordendis            Int? @default(0)
+  eaninsumo           String? @db.VarChar(50)
+  iditem              Int @id @default(autoincrement())
+  porcitem            Float? @default(0)
+  porcacumulado       Float? @default(0)
+  cedempleado         String? @db.VarChar(50)
+  costounitariosale   Float? @default(0)
+  qtyreserva          Float? @default(0)
+  bodegareserva       String? @db.VarChar(20) @default("")
+  descripcion         String? @db.VarChar(150) @default("")
+  escompuesto         String? @db.VarChar(1) @default("-")
+  pvsale              Float?
+  rel_t_seriepedido_1 Seriepedido? @relation("fk_t_materiales_por_orden_t_seriepedido", fields: [orden], references: [ordenpdn], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_materiales_por_orden_t_seriepedido")
+  @@map("t_materiales_por_orden")
+}
+
+/// Legado: [dbo].[T_Narth_Encabezado_Pedido]
+model NarthEncabezadoPedido {
+  autonped               Int
+  fechapedido            DateTime? @db.Timestamp(3)
+  npedido                String @id @db.VarChar(50)
+  cliente                String? @db.VarChar(15)
+  fechavence             DateTime? @db.Timestamp(3)
+  c_fact_ccord           Int? @default(0)
+  c_fact_scord           Int? @default(0)
+  fechafactura           DateTime? @db.Timestamp(3)
+  clientefactura         String? @db.VarChar(50)
+  aprobacion_cartera     Int? @default(0)
+  aprobacion_pdn         Int? @default(0)
+  busca_aprobacion       Int? @default(0)
+  prioridad              Int?
+  nitvble                Int?
+  ocompra                String? @db.VarChar(50)
+  fechacita              DateTime? @db.Timestamp(3)
+  horacita               DateTime? @db.Timestamp(3)
+  listap                 Int?
+  requisitos             String? @db.VarChar(500)
+  anulado                Int? @default(0)
+  despachado             Int?
+  fechanueva             DateTime? @db.Timestamp(3)
+  pedido_muerto          Int? @default(0)
+  iddespacho             Int? @default(0)
+  notificadosrecibido    String? @db.VarChar(150)
+  notificadosdespacho    String? @db.VarChar(150)
+  idpicking              Float? @default(0)
+  aprueba_picking        Int? @default(0)
+  descuentoaplicadoped   Float? @default(0)
+  fecha_cartera          DateTime? @db.Timestamp(3)
+  comenta_cartera        String? @db.VarChar(500)
+  prefijoped             String? @db.VarChar(10) @default("")
+  registradopor          String? @db.VarChar(50) @default("")
+  tazacambio             Int? @default(1)
+  margen                 Float? @default(0)
+  vlpedidopesos          Decimal? @db.Decimal(19, 4) @default(0)
+  ivapedidopesos         Decimal? @db.Decimal(19, 4) @default(0)
+  refererido             String? @db.VarChar(50) @default("")
+  tipodecomprobante      String? @db.VarChar(10)
+  tarifadeimpuesto       String? @db.VarChar(10)
+  direcciondeenvio       String? @db.VarChar(350)
+  personasolicitapedido  String? @db.VarChar(100)
+  tipoventa              String? @db.VarChar(2)
+  panoramacontable       String? @db.VarChar(10)
+  personaapruebapedido   String? @db.VarChar(50)
+  formadepago            String? @db.Char(2)
+  codcomprobantecontable String? @db.VarChar(10)
+  codsegmento            String? @db.VarChar(20)
+  clavepresupuesto       String? @db.VarChar(50)
+  @@map("t_narth_encabezado_pedido")
+}
+
+/// Legado: [dbo].[T_Narth_Serie_Pedido]
+model NarthSeriePedido {
+  numpedido         String? @db.VarChar(50)
+  ordenpdn          Int? @default(0)
+  ref               String? @db.VarChar(50)
+  pares             Float? @default(0)
+  precio_unitario   Float? @default(0)
+  estado            Int? @default(0)
+  color             String? @db.VarChar(50)
+  f_ing_orden       DateTime? @db.Timestamp(3)
+  fact_orden        Boolean? @default(false)
+  identcolor        String? @db.VarChar(50)
+  udsentreg         Float? @default(0)
+  contador          Int @id @default(autoincrement())
+  udscortadasn      Int? @default(0)
+  observaciones     String? @db.VarChar(800)
+  tiquet            Boolean? @default(false)
+  campo1            String? @db.VarChar(50)
+  plucadena         String? @db.VarChar(20)
+  bonifica          Decimal? @db.Decimal(14, 2) @default(0)
+  reserva           Float? @default(0)
+  conffacturado     Int? @default(0)
+  bodega            String? @db.VarChar(15)
+  pendiente         Int? @default(0)
+  numocauto         Float? @default(0)
+  idplantilla       Float? @default(0)
+  visible           Int? @db.SmallInt @default(1)
+  margenaplicado    Float? @default(0)
+  margensegundario  Float? @default(0)
+  tarifadeimpuesto  String? @db.VarChar(10)
+  fechafinalentrega DateTime? @db.Timestamp(3)
+  panoramacontable  String? @db.VarChar(10) @default("")
+  @@map("t_narth_serie_pedido")
+}
+
+/// Legado: [dbo].[T_Orden_COMPRA]
+model OrdenCompra {
+  plan_proyecto                  String? @db.VarChar(10)
+  linea                          String? @db.VarChar(10)
+  actividad                      String? @db.VarChar(12)
+  numordencompra                 Int @id
+  verificaorden                  Int? @default(0)
+  fechacompra                    DateTime? @db.Timestamp(3)
+  fecharecibe                    DateTime? @db.Timestamp(3)
+  proveedor                      String? @db.VarChar(15)
+  observacionescompra            String? @db.VarChar(500)
+  apruebaorden                   Int? @default(0)
+  observacionesrecibo            String? @db.VarChar(500)
+  autofechasolicita              DateTime? @db.Timestamp(3)
+  autofechaaprueba               DateTime? @db.Timestamp(3)
+  tipooc                         String? @db.VarChar(50)
+  estadot                        String? @db.VarChar(1)
+  planearecibo                   Int? @default(0)
+  consecutivoauto                Int @default(autoincrement())
+  lentrega                       String? @db.VarChar(100)
+  elabora                        String? @db.VarChar(50)
+  aprueba                        String? @db.VarChar(50)
+  qsolicita                      String? @db.VarChar(50)
+  anulado                        Int?
+  plazopactadodias               Int? @default(0)
+  observacionesaprueba           String? @db.VarChar(300)
+  prefijo                        String? @db.VarChar(50)
+  consecprefijo                  Float?
+  estado                         String? @db.VarChar(20)
+  codfob                         String? @db.VarChar(20)
+  codenvio                       String? @db.VarChar(20)
+  codmoneda                      String? @db.VarChar(10)
+  noformatooc                    Int?
+  tiposolicitud                  String? @db.VarChar(10)
+  req_aprobacion_de              String? @db.VarChar(50)
+  comprobante_contable           String? @db.VarChar(20)
+  hijos_t_detalle_orden_compra_2 DetalleOrdenCompra[] @relation("fk_t_detalle_orden_compra_t_orden_compra")
+  rel_t_clientes_1               Clientes? @relation("fk_t_orden_compra_t_clientes", fields: [proveedor], references: [nit], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_orden_compra_t_clientes")
+  @@map("t_orden_compra")
+}
+
+/// Legado: [dbo].[T_PIC]
+model Pic {
+  cod_producto         String @db.VarChar(50)
+  bodepicking          String @db.VarChar(15)
+  cajap                Float
+  inv_minimo           Float? @default(0)
+  entradas             Decimal? @db.Decimal(16, 4) @default(0)
+  salidas              Decimal? @db.Decimal(16, 4) @default(0)
+  lote                 String @db.VarChar(20) @default("")
+  ubicacion            String? @db.VarChar(50) @default("")
+  asignado             Int? @default(0)
+  ordenestiba          Int? @default(0)
+  reserva              Decimal? @db.Decimal(14, 2) @default(0)
+  nro                  Int?
+  idempleado           Int?
+  transaccion          String? @db.VarChar(50)
+  documentooc          String? @db.VarChar(50)
+  rel_t_entradas_ras_1 EntradasRas @relation("fk_t_pic", fields: [cajap], references: [cajano], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_pic")
+  rel_t_ins_bodega_2   InsBodega @relation("fk_t_pic_t_ins_bodega", fields: [bodepicking], references: [bodega], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_pic_t_ins_bodega")
+
+  @@id([cod_producto, bodepicking, cajap])
+  @@index([lote, cod_producto], map: "ix_t_pic_lote_cod_producto")
+  @@index([ubicacion], map: "ix_t_pic_ubicacion")
+  @@index([cajap], map: "ix_t_pic_cajap")
+  @@map("t_pic")
+}
+
+/// Legado: [dbo].[T_PIC_Ajuste]
+model PicAjuste {
+  caja                 Float
+  fecha                DateTime? @db.Timestamp(3)
+  saldoinicial         Decimal? @db.Decimal(16, 4)
+  qtyentrada           Decimal? @db.Decimal(16, 4)
+  qtysale              Decimal? @db.Decimal(16, 4)
+  id                   Int @id @default(autoincrement())
+  idempleado           Int?
+  motivoajuste         String? @db.VarChar(500)
+  loteproveedor        String? @db.VarChar(20)
+  numdocumento         String? @db.VarChar(50)
+  ubicacion_sale       String? @db.VarChar(20)
+  rel_t_entradas_ras_1 EntradasRas @relation("fk_t_pic_ajuste", fields: [caja], references: [cajano], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_pic_ajuste")
+  @@map("t_pic_ajuste")
+}
+
+/// Legado: [dbo].[T_PIC_multiproducto]
+model PicMultiproducto {
+  id                   Int @id @default(autoincrement())
+  cajap                Float
+  productoean          String @db.VarChar(50)
+  referencia           String? @db.VarChar(50)
+  entradas             Decimal? @db.Decimal(16, 4)
+  salidas              Decimal? @db.Decimal(16, 4)
+  loteproveedor        String? @db.VarChar(40)
+  fechaultimomvto      DateTime? @db.Timestamp(3)
+  idempleado           Int?
+  ean                  String? @db.VarChar(50)
+  transaccion          String? @db.VarChar(50)
+  documentooc          String? @db.VarChar(50)
+  id_recibociego       Int?
+  rel_t_entradas_ras_1 EntradasRas @relation("fk_t_pic_multiproducto_entradas_ras", fields: [cajap], references: [cajano], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_pic_multiproducto_entradas_ras")
+  @@map("t_pic_multiproducto")
+}
+
+/// Legado: [dbo].[t_pic_pods]
+model PicPods {
+  id              Int @id @default(autoincrement())
+  cajap_pods      Float
+  productoean     String @db.VarChar(50)
+  referencia      String @db.VarChar(50)
+  entradas        Decimal? @db.Decimal(14, 2)
+  salidas         Decimal? @db.Decimal(14, 2)
+  loteproveedor   String? @db.VarChar(40)
+  fechaultimomvto DateTime? @db.Timestamp(3)
+  idempleado      Int?
+  transaccion     String? @db.VarChar(20)
+  ean             String @db.VarChar(50)
+  documentooc     String? @db.VarChar(50)
+  ubicacion       String @db.VarChar(20)
+  @@map("t_pic_pods")
+}
+
+/// Legado: [dbo].[T_PIC_UbicacionesFijasxEan]
+model PicUbicacionesfijasxean {
+  id            Int @default(autoincrement())
+  productoean   String @db.VarChar(50)
+  ubicacion     String @db.VarChar(20)
+  entradas      Decimal? @db.Decimal(18, 5)
+  salidas       Decimal? @db.Decimal(18, 5)
+  reservas      Decimal? @db.Decimal(18, 5)
+  contenedor    String? @db.VarChar(20)
+  ubicacion_old String? @db.VarChar(20)
+
+  @@id([productoean, ubicacion])
+  @@map("t_pic_ubicacionesfijasxean")
+}
+
+/// Legado: [dbo].[T_procesos_OREDENES]
+model ProcesosOredenes {
+  orden               Int?
+  cod_proces          Int?
+  referencia          String? @db.VarChar(5)
+  talla               String? @db.VarChar(50)
+  pakete              Int?
+  confirmacion        Int? @default(0)
+  numpedido           Decimal? @db.Decimal(18, 0)
+  maquina             String? @db.VarChar(50)
+  standar             Float?
+  vl_proceso          Float?
+  f_ingreso           DateTime? @db.Timestamp(3)
+  f_procesa           DateTime? @db.Timestamp(3)
+  pares_orden         Int?
+  uds_reproces        Int?
+  empleado_grupo      Int?
+  cantidad_talla      Int?
+  confirma2           Boolean? @default(false)
+  confirma3           Boolean? @default(false)
+  confirma4           Boolean? @default(false)
+  ppp                 String? @db.VarChar(100)
+  secuencia           Int?
+  controltiquete      Int @id @default(autoincrement())
+  cosectiquet         Int?
+  hip                 DateTime? @db.Timestamp(3)
+  npers               Int?
+  codpers             String? @db.VarChar(50)
+  tporeal             Float?
+  htp                 DateTime? @db.Timestamp(3)
+  udliqtalla          Int?
+  confprglog          Boolean? @default(false)
+  nummaqfco           Int?
+  seccion             String? @db.Char(10)
+  observ              String? @db.VarChar(200)
+  rel_t_seriepedido_1 Seriepedido? @relation("fk_t_procesos_oredenes_t_seriepedido", fields: [orden], references: [ordenpdn], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_procesos_oredenes_t_seriepedido")
+  @@unique([orden, cod_proces])
+  @@map("t_procesos_oredenes")
+}
+
+/// Legado: [dbo].[T_Programacion_Produccion]
+model ProgramacionProduccion {
+  id             Int @id @default(autoincrement())
+  ean            String? @db.VarChar(60)
+  maquina        String? @db.VarChar(60)
+  yyyy           Int?
+  mm             Int?
+  dd             Int?
+  inicio_hh      Int?
+  inicio_mm      Int?
+  inicio_ss      Int?
+  final_hh       Int?
+  final_mm       Int?
+  final_ss       Int?
+  fecha_registro DateTime? @db.Timestamp(3)
+  @@map("t_programacion_produccion")
+}
+
+/// Legado: [dbo].[T_Serie_Pedido_Nueva]
+model SeriePedidoNueva {
+  nofatura                   Int?
+  refean                     String? @db.VarChar(50)
+  nopedido                   String? @db.VarChar(50)
+  listapre                   Int?
+  unidades                   Float?
+  confirma                   Int? @default(0)
+  bodegas                    String? @db.VarChar(15)
+  dezcuento                  Float? @default(0)
+  preciopasa                 Float?
+  pickinorigen               Int?
+  lotte                      String? @db.VarChar(20)
+  bonifi                     Decimal? @db.Decimal(18, 2)
+  idseriepedidonueva         Int @id @default(autoincrement())
+  costomciaventa             Float?
+  docaplica                  String? @db.VarChar(50)
+  costopromedio              Float? @default(0)
+  descripcion                String? @db.VarChar(200)
+  tarifadeimpuesto           String? @db.VarChar(10)
+  rel_t_detalle_referencia_1 DetalleReferencia? @relation("fk_t_serie_pedido_nueva_t_detalle_referencia", fields: [refean], references: [productoean], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_serie_pedido_nueva_t_detalle_referencia")
+  rel_ta_facturacion_2       Facturacion? @relation("fk_t_serie_pedido_nueva_ta_facturacion", fields: [nofatura], references: [nfact], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_serie_pedido_nueva_ta_facturacion")
+  @@map("t_serie_pedido_nueva")
+}
+
+/// Legado: [dbo].[T_seriePedido]
+model Seriepedido {
+  numpedido                      Int?
+  ordenpdn                       Int @id
+  ref                            String? @db.VarChar(5)
+  pares                          Float?
+  precio_unitario                Int?
+  estado                         Int? @default(0)
+  color                          String? @db.VarChar(20)
+  f_ing_orden                    DateTime? @db.Timestamp(3)
+  fact_orden                     Boolean? @default(false)
+  identcolor                     String? @db.VarChar(20)
+  udsentreg                      Float?
+  udscortadasn                   Int?
+  observaciones                  String? @db.VarChar(500)
+  tiquet                         Boolean? @default(false)
+  lotebatch                      String? @db.VarChar(100)
+  fechaprepara                   DateTime? @db.Timestamp(3)
+  cif                            Float?
+  tcosto                         Float?
+  fecha_ven                      DateTime? @db.Timestamp(3)
+  tipoo                          String? @db.VarChar(50) @default("")
+  cantterminada                  Int?
+  opasociada                     Int?
+  ok                             Int?
+  consecutivoprefijo             Int? @default(0)
+  plantiasociada                 Float? @default(0)
+  nitdetalle                     String? @db.VarChar(18) @default("")
+  npedidocliente                 String? @db.VarChar(50)
+  estadoreservamp                Int? @default(0)
+  refsecundaria                  String? @db.VarChar(50) @default("")
+  idsolicitud                    Int? @default(0)
+  conclusioncierre               String? @db.VarChar(500) @default("")
+  asignadopara                   String? @db.VarChar(50) @default("")
+  ordendeinicio                  Int? @default(0)
+  ubicacionfisica                String? @db.VarChar(50) @default("ND")
+  codigopresupuesto              String? @db.VarChar(50) @default("")
+  pickingasignado                Int? @default(0)
+  valoraprobadoorden             Float?
+  hijos_t_materiales_por_orden_1 MaterialesPorOrden[] @relation("fk_t_materiales_por_orden_t_seriepedido")
+  hijos_t_procesos_oredenes_1    ProcesosOredenes[] @relation("fk_t_procesos_oredenes_t_seriepedido")
+  rel_t_encabezadopedido_1       Encabezadopedido? @relation("fk_t_seriepedido_t_encabezadopedido", fields: [numpedido], references: [npedido], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_seriepedido_t_encabezadopedido")
+  rel_t_ins_referencias_2        InsReferencias? @relation("fk_t_seriepedido_t_ins_referencias", fields: [ref], references: [codigoreferencia], onDelete: NoAction, onUpdate: NoAction, map: "fk_t_seriepedido_t_ins_referencias")
+  @@map("t_seriepedido")
+}
+
+/// Legado: [dbo].[TGG_t_pic]
+model TggTPic {
+  cajap          Int?
+  referencia     String? @db.VarChar(50)
+  entradas       Decimal? @db.Decimal(16, 4)
+  salidas        Decimal? @db.Decimal(16, 4)
+  idempleado     Int?
+  fecha          DateTime? @db.Timestamp(3)
+  ubicacion_sale String? @db.VarChar(50)
+  ean            String? @db.VarChar(50)
+  transaccion    String? @db.VarChar(100)
+  id             Int @id @default(autoincrement())
+  saldo          Decimal? @db.Decimal(16, 4)
+  loteproveedor  String? @db.VarChar(50)
+  documentooc    String? @db.VarChar(50)
+  @@map("tgg_t_pic")
+}
