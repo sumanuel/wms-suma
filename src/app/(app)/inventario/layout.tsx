@@ -13,7 +13,8 @@ export default async function LayoutInventario({ children }: { children: ReactNo
           { href: "/inventario", etiqueta: "Existencias" },
           { href: "/inventario/cajas", etiqueta: "Cajas" },
           { href: "/inventario/lotes", etiqueta: "Lotes" },
-          ...(tienePermiso(ctx, "inventario", "editar") ? [{ href: "/inventario/ajustes", etiqueta: "Ajustes" }] : []),
+          ...(tienePermiso(ctx, "inventario", "crear") ? [{ href: "/inventario/recepcion", etiqueta: "Recepción" }] : []),
+          ...(tienePermiso(ctx, "inventario", "editar") ? [{ href: "/inventario/almacenar", etiqueta: "Almacenar" }, { href: "/inventario/ajustes", etiqueta: "Ajustes" }] : []),
           ...(tienePermiso(ctx, "inventario", "crear") ? [{ href: "/inventario/carga-inicial", etiqueta: "Carga inicial" }] : []),
         ]}
       />

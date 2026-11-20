@@ -70,7 +70,7 @@ export async function consultar(db: Db, texto: string, tipo: TipoBusqueda): Prom
 }
 
 /** Lleva una caja a otra ubicación (como «Ubicar caja» del lector). La saca del pallet si estaba en uno. */
-export async function reubicarCaja(db: Db, caja: number, ubicacion: string) {
+export async function reubicarCaja(db: Db, caja: number, ubicacion: string, transaccion = "UBICAR CAJA") {
   const ub = ubicacion.trim();
   if (!Number.isInteger(caja) || caja <= 0) throw new ErrorDeNegocio("Lee o escribe el número de la caja.");
   if (!ub) throw new ErrorDeNegocio("Lee o escribe la ubicación de destino.");
@@ -93,7 +93,7 @@ export async function reubicarCaja(db: Db, caja: number, ubicacion: string) {
     await tx.$executeRaw`UPDATE t_pic SET ubicacion = ${destino}, bodepicking = ${u[0].bodegac} WHERE cajap = ${caja}`;
     await tx.$executeRaw`
       INSERT INTO tgg_t_reg_movimientosdecaja (caja, ubicacion, fecha, idempleado, transaccion, ubicacion_inicial, saldo, productoean, loteproveedor, bodega_inicial, bodega_final)
-      VALUES (${caja}, ${destino}, now(), 0, 'UBICAR CAJA', ${cx.ubicacion}, ${Number(cx.saldo)}, ${cx.ean}, ${cx.lote}, ${bi[0]?.bodegac ?? cx.bodega}, ${u[0].bodegac})`;
+      VALUES (${caja}, ${destino}, now(), 0, ${transaccion}, ${cx.ubicacion}, ${Number(cx.saldo)}, ${cx.ean}, ${cx.lote}, ${bi[0]?.bodegac ?? cx.bodega}, ${u[0].bodegac})`;
     await tx.$executeRaw`UPDATE t_ins_coordenadas SET ocupacion = 1 WHERE ubicacion = ${destino}`;
     if (cx.ubicacion) {
       const quedan = await tx.$queryRaw<{ n: number }[]>`SELECT COUNT(*)::int AS n FROM t_pic WHERE ubicacion = ${cx.ubicacion} AND (entradas - salidas) > 0`;

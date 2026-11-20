@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { ClipboardList, Layers, MapPin, ScanBarcode, Search, SlidersVertical, type LucideIcon } from "lucide-react";
+import { ClipboardList, Layers, PackagePlus, MapPin, ScanBarcode, Search, SlidersVertical, type LucideIcon } from "lucide-react";
 import { Tarjeta } from "@/components/ui";
 import { requerirPermiso, tienePermiso } from "@/lib/dal";
 
 const OPCIONES: { href: string; titulo: string; texto: string; icono: LucideIcon; modulo: string; accion: "ver" | "editar" | "crear" }[] = [
   { href: "/movil/consulta", titulo: "Consultas rápidas", texto: "Caja, ubicación, artículo o pallet.", icono: Search, modulo: "inventario", accion: "ver" },
+  { href: "/movil/almacenar", titulo: "Almacenar", texto: "Guardar cajas del recibo donde se sugiere.", icono: PackagePlus, modulo: "inventario", accion: "editar" },
   { href: "/movil/ubicar", titulo: "Ubicar caja", texto: "Llevar una caja a otra ubicación.", icono: MapPin, modulo: "inventario", accion: "editar" },
   { href: "/movil/pallet", titulo: "Pallets", texto: "Agregar cajas y ubicar pallets.", icono: Layers, modulo: "pallets", accion: "editar" },
   { href: "/movil/picking", titulo: "Picking", texto: "Pickear por ruta leyendo la caja.", icono: ScanBarcode, modulo: "prepacking", accion: "editar" },
