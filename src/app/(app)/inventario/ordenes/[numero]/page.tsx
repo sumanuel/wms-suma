@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PackagePlus } from "lucide-react";
+import { EyeOff, PackagePlus, Pencil } from "lucide-react";
 import { EncabezadoFicha } from "@/components/ficha";
 import { Aviso, Etiqueta, Tarjeta, clasesBoton, formatearFechaHora, type Tono } from "@/components/ui";
 import { requerirPermiso, tienePermiso } from "@/lib/dal";
@@ -10,7 +10,7 @@ import { FormularioRazon } from "./formularios";
 
 const n = (v: unknown) => new Intl.NumberFormat("es-CO", { maximumFractionDigits: 4 }).format(Number(v ?? 0));
 const TONO: Record<string, Tono> = { Abierta: "aviso", Parcial: "marca", Cerrada: "exito", Anulada: "neutro" };
-const AVISOS: Record<string, string> = { creada: "Se creó la orden de compra.", cerrada: "La orden quedó cerrada con lo que faltaba.", anulada: "La orden quedó anulada." };
+const AVISOS: Record<string, string> = { editada: "Se guardaron los cambios de la orden.", creada: "Se creó la orden de compra.", cerrada: "La orden quedó cerrada con lo que faltaba.", anulada: "La orden quedó anulada." };
 
 export default async function FichaOrden({ params, searchParams }: { params: Promise<{ numero: string }>; searchParams: Promise<{ aviso?: string }> }) {
   const ctx = await requerirPermiso("inventario", "ver");
@@ -30,7 +30,9 @@ export default async function FichaOrden({ params, searchParams }: { params: Pro
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <Etiqueta tono={TONO[String(orden.estado)] ?? "neutro"}>{String(orden.estado ?? "—")}</Etiqueta>
           <span className="text-sm text-gris-500">Recibido {n(recibido)} de {n(pedido)}</span>
-          {abierta && tienePermiso(ctx, "inventario", "crear") ? <Link href={`/inventario/recepcion?oc=${numero}`} className={clasesBoton("primario", "ml-auto")}><PackagePlus className="size-4" aria-hidden />Recibir mercancía</Link> : null}
+          {abierta && tienePermiso(ctx, "inventario", "editar") ? <Link href={`/inventario/ordenes/${numero}/editar`} className={clasesBoton("secundario", "ml-auto")}><Pencil className="size-4" aria-hidden />Editar</Link> : null}
+          {abierta && tienePermiso(ctx, "inventario", "crear") ? <Link href={`/inventario/recepcion?oc=${numero}`} className={clasesBoton("primario")}><PackagePlus className="size-4" aria-hidden />Recibir mercancía</Link> : null}
+          {abierta && tienePermiso(ctx, "inventario", "crear") ? <Link href={`/inventario/recepcion?oc=${numero}&ciego=1`} className={clasesBoton("secundario")}><EyeOff className="size-4" aria-hidden />Recibo ciego</Link> : null}
         </div>
         <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2 xl:grid-cols-4">
           {[["NIT", orden.proveedor ?? "—"], ["Elaboró", orden.elabora ?? "—"], ["Cerrada", orden.fecharecibe ? formatearFechaHora(orden.fecharecibe) : "—"], ["Observaciones", orden.observacionescompra ?? "—"], ["Recibo", orden.observacionesrecibo ?? "—"]].map(([k, v]) => (

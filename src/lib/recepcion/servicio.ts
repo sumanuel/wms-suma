@@ -18,7 +18,7 @@ const r4 = (n: number) => Math.round(n * 10000) / 10000;
 export const PREFIJO_RECEPCION = "Recepción ";
 
 export type LineaRecepcion = { ean: string; lote: string; vence: string | null; cajas: number; cantidad: number };
-export type DatosRecepcion = { bodega: string; documento: string; nit: string | null; estado: string; lineas: LineaRecepcion[]; orden?: number | null };
+export type DatosRecepcion = { bodega: string; documento: string; nit: string | null; estado: string; lineas: LineaRecepcion[]; orden?: number | null; permitirExceso?: boolean };
 
 export async function ubicacionDeRecibo(db: Db | Prisma.TransactionClient, bodega: string) {
   const f = await db.$queryRaw<{ ubicacion: string; seleccion: boolean | null }[]>`
@@ -28,7 +28,7 @@ export async function ubicacionDeRecibo(db: Db | Prisma.TransactionClient, bodeg
 
 const esFecha = (s: string) => /^\d{4}-\d{2}-\d{2}$/.test(s) && new Date(`${s}T00:00:00.000Z`).toISOString().slice(0, 10) === s;
 
-export async function recibir(db: Db, d: DatosRecepcion) {
+export async function recibir(db: Db, d: DatosRecepcion, externa?: Prisma.TransactionClient) {
   const documento = d.orden ? `OC-${d.orden}` : d.documento.trim();
   if (documento.length < 3 || documento.length > 40) throw new ErrorDeNegocio("El documento (orden de compra, remisión o factura) debe tener entre 3 y 40 caracteres.");
   if (!(ESTADOS_CALIDAD as readonly string[]).includes(d.estado)) throw new ErrorDeNegocio("Elige el estado de calidad de los lotes nuevos.");
@@ -51,7 +51,7 @@ export async function recibir(db: Db, d: DatosRecepcion) {
   const nit = d.orden ? null : d.nit?.trim() || null;
   if (nit && !(await db.clientes.findUnique({ where: { nit }, select: { nit: true } }))) throw new ErrorDeNegocio(`No existe un tercero con el NIT ${nit}.`);
 
-  return db.$transaction(async (tx) => {
+  const cuerpo = async (tx: Prisma.TransactionClient) => {
     const bod = await tx.insBodega.findUnique({ where: { bodega: d.bodega }, select: { bodega: true, prcierre: true } });
     if (!bod) throw new ErrorDeNegocio(`No existe la bodega «${d.bodega}».`);
     if (bod.prcierre) throw new ErrorDeNegocio(`La bodega ${d.bodega} está cerrada.`);
@@ -65,7 +65,7 @@ export async function recibir(db: Db, d: DatosRecepcion) {
       if (bo.some((x) => x.bodega && x.bodega !== d.bodega)) throw new ErrorDeNegocio(`La orden ${d.orden} es para la bodega ${bo.map((x) => x.bodega).join(", ")}, no para ${d.bodega}.`);
       const cfg = await tx.configuracion.findUnique({ where: { clave: "recepcion.tolerancia" } });
       const t = cfg && typeof cfg.valor === "object" && cfg.valor ? Number((cfg.valor as { porcentaje?: unknown }).porcentaje) : 0;
-      tolerancia = Number.isFinite(t) && t > 0 ? t : 0;
+      tolerancia = d.permitirExceso ? Number.POSITIVE_INFINITY : Number.isFinite(t) && t > 0 ? t : 0;
     }
     const rec = await ubicacionDeRecibo(tx, d.bodega);
     if (!rec) throw new ErrorDeNegocio(`La bodega ${d.bodega} no tiene ubicación de recibo: crea una ubicación que se llame RECIBO (o RECEPCION) en esa bodega.`);
@@ -143,7 +143,8 @@ export async function recibir(db: Db, d: DatosRecepcion) {
       ordenCompleta = (await aplicarRecepcion(tx, d.orden, porArticulo, tolerancia)).completa;
     }
     return { ordenCompleta, documento, desde: primera, hasta: siguiente - 1, cajas: entradas.length, unidades: r4(unidades), ubicacion: rec.ubicacion, lotesNuevos: [...lotes.values()].filter((x) => !x.existe).length };
-  }, { timeout: 120000, maxWait: 20000 });
+  };
+  return externa ? cuerpo(externa) : db.$transaction(cuerpo, { timeout: 120000, maxWait: 20000 });
 }
 
 export async function recepcionesRecientes(db: Db) {

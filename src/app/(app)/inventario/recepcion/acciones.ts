@@ -18,7 +18,7 @@ export async function registrarRecepcion(_p: EstadoRecepcion, form: FormData): P
     const vence = String(form.get(`vence_${i}`) ?? "").trim();
     const cajasT = String(form.get(`cajas_${i}`) ?? "").trim();
     const cantT = String(form.get(`cantidad_${i}`) ?? "").trim();
-    if (!ean && !lote && !vence && !cajasT && !cantT) continue; // fila vacía
+    if (!lote && !vence && !cajasT && !cantT) continue; // fila vacía (el código puede venir prellenado desde la orden)
     lineas.push({ ean, lote, vence: vence || null, cajas: numero(cajasT), cantidad: numero(cantT) });
   }
   try {

@@ -4,15 +4,14 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requerirPermisoAccion } from "@/lib/dal";
 import { registrarCambio } from "@/lib/auditoria";
-import { analizarOrdenes, anularOrden, cerrarOrden, crearOrden, importarOrdenes, type AnalisisOrdenes } from "@/lib/compras/ordenes";
+import { analizarOrdenes, anularOrden, cerrarOrden, crearOrden, editarOrden, importarOrdenes, type AnalisisOrdenes } from "@/lib/compras/ordenes";
 import { ErrorDeNegocio } from "@/lib/inventario/calidad";
 
 export type Estado = { error?: string; aviso?: string };
 const falla = (e: unknown): Estado => { if (e instanceof ErrorDeNegocio) return { error: e.message }; throw e; };
 const num = (v: unknown) => { const t = String(v ?? "").trim(); if (!t) return NaN; return Number(t.includes(",") ? t.replace(/\./g, "").replace(",", ".") : t); };
 
-export async function nuevaOrden(_p: Estado, form: FormData): Promise<Estado> {
-  const { db, usuario } = await requerirPermisoAccion("inventario", "crear");
+function leerLineas(form: FormData) {
   const lineas: { ean: string; cantidad: number; precio: number | null }[] = [];
   const total = Math.min(Number(form.get("lineas") ?? 0), 300);
   for (let i = 0; i < total; i++) {
@@ -22,6 +21,12 @@ export async function nuevaOrden(_p: Estado, form: FormData): Promise<Estado> {
     if (!ean && !cantT && !precT) continue;
     lineas.push({ ean, cantidad: num(cantT), precio: precT ? num(precT) : null });
   }
+  return lineas;
+}
+
+export async function nuevaOrden(_p: Estado, form: FormData): Promise<Estado> {
+  const { db, usuario } = await requerirPermisoAccion("inventario", "crear");
+  const lineas = leerLineas(form);
   let numero: number;
   try {
     numero = await crearOrden(db, { orden: 0, bodega: String(form.get("bodega") ?? ""), nit: String(form.get("nit") ?? ""), esperada: String(form.get("esperada") ?? "") || null, observaciones: String(form.get("observaciones") ?? "") || null, lineas }, usuario.nombre);
@@ -31,6 +36,19 @@ export async function nuevaOrden(_p: Estado, form: FormData): Promise<Estado> {
   }
   revalidatePath("/inventario/ordenes");
   redirect(`/inventario/ordenes/${numero}?aviso=creada`);
+}
+
+export async function editar(numero: number, _p: Estado, form: FormData): Promise<Estado> {
+  const { db, usuario } = await requerirPermisoAccion("inventario", "editar");
+  const lineas = leerLineas(form);
+  try {
+    const r = await editarOrden(db, numero, { orden: numero, bodega: String(form.get("bodega") ?? ""), nit: String(form.get("nit") ?? ""), esperada: String(form.get("esperada") ?? "") || null, observaciones: String(form.get("observaciones") ?? "") || null, lineas });
+    await registrarCambio(db, { usuarioId: usuario.id, entidad: "t_orden_compra", entidadId: String(numero), accion: "editar", despues: { lineas: lineas.length, completa: r.completa } });
+  } catch (e) {
+    return falla(e);
+  }
+  revalidatePath("/inventario/ordenes");
+  redirect(`/inventario/ordenes/${numero}?aviso=editada`);
 }
 
 export async function cerrar(numero: number, _p: Estado, form: FormData): Promise<Estado> {

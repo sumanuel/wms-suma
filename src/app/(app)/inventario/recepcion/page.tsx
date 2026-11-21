@@ -6,9 +6,10 @@ import { bodegasConStock } from "@/lib/inventario/consultas";
 import { ESTADOS, fichaOrden, ordenesPorRecibir } from "@/lib/compras/ordenes";
 import { recepcionesRecientes } from "@/lib/recepcion/servicio";
 import { Aviso } from "@/components/ui";
+import { FormularioCiego } from "./formulario-ciego";
 import { FormularioRecepcion, type OrdenParaRecibir } from "./formulario-recepcion";
 
-export default async function Recepcion({ searchParams }: { searchParams: Promise<{ oc?: string }> }) {
+export default async function Recepcion({ searchParams }: { searchParams: Promise<{ oc?: string; ciego?: string }> }) {
   const { db } = await requerirPermiso("inventario", "crear");
   const q = await searchParams;
   const [bodegas, recientes, porRecibir] = await Promise.all([bodegasConStock(db), recepcionesRecientes(db), ordenesPorRecibir(db)]);
@@ -23,6 +24,17 @@ export default async function Recepcion({ searchParams }: { searchParams: Promis
       if (pend.length === 0) problema = `La orden ${q.oc} no tiene nada pendiente.`;
       else orden = { numero: f.orden.numordencompra, proveedor: f.orden.proveedor ?? "", bodega: String(pend[0].bodega ?? ""), lineas: pend.map((l) => ({ ean: String(l.ean), articulo: String(l.articulo ?? l.ean), pendiente: Number(l.pendiente) })) };
     }
+  }
+  if (orden && q.ciego === "1") {
+    return (
+      <div className="flex flex-col gap-5">
+        <Tarjeta className="p-5">
+          <h2 className="mb-1 text-base font-semibold">Recibo ciego de la orden {orden.numero}</h2>
+          <p className="mb-4 max-w-3xl text-[13.5px] text-gris-500">Cuenta lo que llegó sin mirar lo que se esperaba: no se muestran las cantidades de la orden. El conteo queda por conciliar y no crea inventario hasta que un aprobador lo autorice.</p>
+          <FormularioCiego orden={orden.numero} estados={[...ESTADOS_CALIDAD]} />
+        </Tarjeta>
+      </div>
+    );
   }
   return (
     <div className="flex flex-col gap-5">

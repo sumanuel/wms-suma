@@ -1,0 +1,35 @@
+/// Recibo ciego (propio del WMS web): quien recibe cuenta lo que llegó sin ver lo que se esperaba. El conteo queda «por conciliar»
+/// hasta que un aprobador lo compara con la orden de compra y lo autoriza (se crean las cajas) o lo rechaza.
+model ReciboCiego {
+  id               Int       @id @default(autoincrement())
+  orden            Int
+  bodega           String    @db.VarChar(15)
+  estado           String    @default("por_conciliar") @db.VarChar(15)
+  creado_por       String?   @db.VarChar(40)
+  creado_nombre    String?   @db.VarChar(120)
+  fecha            DateTime  @default(now()) @db.Timestamptz(6)
+  resuelto_por     String?   @db.VarChar(40)
+  resuelto_nombre  String?   @db.VarChar(120)
+  fecha_resolucion DateTime? @db.Timestamptz(6)
+  nota             String?   @db.VarChar(300)
+  calidad          String    @db.VarChar(30)
+  lineas           ReciboCiegoLinea[]
+
+  @@index([estado])
+  @@index([orden])
+  @@map("recibo_ciego")
+}
+
+model ReciboCiegoLinea {
+  id        Int         @id @default(autoincrement())
+  recibo_id Int
+  ean       String      @db.VarChar(50)
+  lote      String      @db.VarChar(30)
+  vence     DateTime?   @db.Date
+  cajas     Int
+  cantidad  Decimal     @db.Decimal(18, 4)
+  recibo    ReciboCiego @relation(fields: [recibo_id], references: [id], onDelete: Cascade)
+
+  @@index([recibo_id])
+  @@map("recibo_ciego_linea")
+}

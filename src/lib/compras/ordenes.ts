@@ -138,6 +138,50 @@ export async function anularOrden(db: Db, numero: number, razon: string) {
   });
 }
 
+// ── Editar ────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+/** Cambia una orden abierta o parcial. Lo ya recibido protege: no se quitan líneas con recibo, no se baja la cantidad de lo recibido y, con recibo, no cambian el proveedor ni la bodega. */
+export async function editarOrden(db: Db, numero: number, o: Orden) {
+  return db.$transaction(async (tx) => {
+    const act = await tx.ordenCompra.findUnique({ where: { numordencompra: numero } });
+    if (!act) throw new ErrorDeNegocio("La orden no existe.");
+    if (act.estado !== ESTADOS.abierta && act.estado !== ESTADOS.parcial) throw new ErrorDeNegocio(`La orden está ${String(act.estado ?? "").toLowerCase()}: no se puede editar.`);
+    await tx.$queryRaw`SELECT numordencompra FROM t_orden_compra WHERE numordencompra = ${numero} FOR UPDATE`;
+    const arts = await validar(tx, { ...o, orden: numero });
+    const actuales = await tx.$queryRaw<{ id: number; ean: string; recibido: number; bodega: string | null }[]>`
+      SELECT iddetordcomppra AS id, eanproveedores AS ean, COALESCE(recibidok, 0) AS recibido, bodega FROM t_detalle_orden_compra WHERE nordencompra = ${numero} FOR UPDATE`;
+    const hayRecibo = actuales.some((l) => l.recibido > 0);
+    if (hayRecibo) {
+      if (o.nit.trim() !== (act.proveedor ?? "")) throw new ErrorDeNegocio("La orden ya recibió mercancía: no se cambia el proveedor.");
+      const bod = actuales.find((l) => l.bodega)?.bodega;
+      if (bod && o.bodega !== bod) throw new ErrorDeNegocio(`La orden ya recibió mercancía: la bodega sigue siendo ${bod}.`);
+    }
+    const nuevas = new Map(o.lineas.map((l) => [l.ean, l]));
+    for (const a of actuales) {
+      const n = nuevas.get(a.ean);
+      if (!n && a.recibido > 0) throw new ErrorDeNegocio(`No se puede quitar el artículo ${a.ean}: ya se recibieron ${r4(a.recibido)}.`);
+      if (n && n.cantidad + 1e-9 < a.recibido) throw new ErrorDeNegocio(`El artículo ${a.ean} no puede quedar en ${n.cantidad}: ya se recibieron ${r4(a.recibido)}.`);
+    }
+    const esperada = o.esperada ? new Date(`${o.esperada}T00:00:00.000Z`) : null;
+    const porEan = new Map(actuales.map((a) => [a.ean, a]));
+    for (const a of actuales) if (!nuevas.has(a.ean)) await tx.detalleOrdenCompra.delete({ where: { iddetordcomppra: a.id } });
+    for (const l of o.lineas) {
+      const a = porEan.get(l.ean);
+      const comun = { requerido: l.cantidad, cantpendientexrecib: Math.max(r4(l.cantidad - (a?.recibido ?? 0)), 0), precioentra: l.precio, bodega: o.bodega, provasignado: o.nit.trim().slice(0, 15), fechaprometidad: esperada, cumplido: l.cantidad - (a?.recibido ?? 0) <= 1e-9 ? 1 : 0 };
+      if (a) await tx.detalleOrdenCompra.update({ where: { iddetordcomppra: a.id }, data: comun });
+      else await tx.detalleOrdenCompra.create({ data: { ...comun, nordencompra: numero, eanproveedores: l.ean, recibidok: 0, descrive: arts.get(l.ean)?.descripcion?.slice(0, 150) ?? null } });
+    }
+    const f = await tx.$queryRaw<{ pendientes: number; recibidas: number }[]>`
+      SELECT (COUNT(*) FILTER (WHERE COALESCE(requerido, 0) - COALESCE(recibidok, 0) > 1e-9))::int AS pendientes, (COUNT(*) FILTER (WHERE COALESCE(recibidok, 0) > 0))::int AS recibidas FROM t_detalle_orden_compra WHERE nordencompra = ${numero}`;
+    const completa = (f[0]?.pendientes ?? 0) === 0;
+    await tx.ordenCompra.update({
+      where: { numordencompra: numero },
+      data: { proveedor: o.nit.trim(), observacionescompra: o.observaciones?.trim().slice(0, 500) || null, estado: completa ? ESTADOS.cerrada : (f[0]?.recibidas ?? 0) > 0 ? ESTADOS.parcial : ESTADOS.abierta, ...(completa ? { fecharecibe: new Date() } : {}) },
+    });
+    return { completa };
+  });
+}
+
 // ── Importar desde una planilla (la vía para traer las órdenes del ERP) ────────────────────────────────────────────
 
 export const COLUMNAS = [
@@ -248,7 +292,7 @@ export async function aplicarRecepcion(tx: Prisma.TransactionClient, numero: num
     const l = porEan.get(ean);
     if (!l) throw new ErrorDeNegocio(`El artículo ${ean} no está en la orden ${numero}.`);
     const pendiente = r4(l.requerido - l.recibido);
-    const permitido = r4(pendiente * (1 + tolerancia / 100));
+    const permitido = tolerancia === Number.POSITIVE_INFINITY ? Number.POSITIVE_INFINITY : r4(pendiente * (1 + tolerancia / 100));
     if (q > permitido + 1e-9) throw new ErrorDeNegocio(`El artículo ${ean}: se reciben ${r4(q)} pero a la orden le faltan ${Math.max(pendiente, 0)}${tolerancia > 0 ? ` (tolerancia ${tolerancia}%)` : ""}.`);
     await tx.$executeRaw`
       UPDATE t_detalle_orden_compra SET recibidok = COALESCE(recibidok, 0) + ${q}, cantpendientexrecib = GREATEST(COALESCE(requerido, 0) - COALESCE(recibidok, 0) - ${q}, 0),
