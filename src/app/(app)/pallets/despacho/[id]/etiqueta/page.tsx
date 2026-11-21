@@ -1,14 +1,17 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { clasesBoton } from "@/components/ui";
-import { requerirPermiso } from "@/lib/dal";
+import { requerirPermiso, tienePermiso } from "@/lib/dal";
+import { impresorasActivas } from "@/lib/etiquetas/impresion";
+import { ImprimirDirecto } from "../../../imprimir-directo";
 import { ssccPallet } from "@/lib/etiquetas/codigos";
 import { etiquetaPalletDespacho } from "@/lib/pallets/despacho";
 import { BotonImprimir } from "../../../../despacho/boton-imprimir";
 import { Barras, BarraImpresion, Etiqueta100x150 } from "../../../etiqueta-base";
 
 export default async function EtiquetaPalletDespacho({ params }: { params: Promise<{ id: string }> }) {
-  const { db } = await requerirPermiso("pallets", "ver");
+  const ctx = await requerirPermiso("pallets", "ver");
+  const { db } = ctx;
   const { id: t } = await params;
   if (!/^\d+$/.test(t)) notFound();
   const id = Number(t);
@@ -17,7 +20,7 @@ export default async function EtiquetaPalletDespacho({ params }: { params: Promi
   const sscc = ssccPallet(id);
   return (
     <div className="flex flex-col gap-4">
-      <BarraImpresion><Link href={`/pallets/despacho/${id}`} className={clasesBoton("fantasma")}>← Volver al pallet</Link><BotonImprimir /></BarraImpresion>
+      <BarraImpresion><Link href={`/pallets/despacho/${id}`} className={clasesBoton("fantasma")}>← Volver al pallet</Link><BotonImprimir /><ImprimirDirecto tipo="pallet-despacho" referencia={{ id }} impresoras={await impresorasActivas(db)} puedeImprimir={tienePermiso(ctx, "pallets", "editar")} /></BarraImpresion>
       <Etiqueta100x150>
         <div className="flex items-baseline justify-between"><p className="text-xs font-semibold uppercase tracking-wide">Pallet de despacho</p><p className="text-xs">Bodega {e.pallet.bodega}</p></div>
         <p className="text-6xl font-extrabold leading-none tabular-nums">{id}</p>

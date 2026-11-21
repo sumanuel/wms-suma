@@ -1,13 +1,16 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { requerirPermiso } from "@/lib/dal";
+import { requerirPermiso, tienePermiso } from "@/lib/dal";
+import { impresorasActivas } from "@/lib/etiquetas/impresion";
+import { ImprimirDirecto } from "../../imprimir-directo";
 import { clasesBoton } from "@/components/ui";
 import { detallePallet } from "@/lib/pallets/servicio";
 import { BotonImprimir } from "../../../despacho/boton-imprimir";
 import { Barras, BarraImpresion, Etiqueta100x150 } from "../../etiqueta-base";
 
 export default async function EtiquetaPallet({ params }: { params: Promise<{ numero: string }> }) {
-  const { db } = await requerirPermiso("pallets", "ver");
+  const ctx = await requerirPermiso("pallets", "ver");
+  const { db } = ctx;
   const { numero: t } = await params;
   if (!/^\d+$/.test(t)) notFound();
   const numero = Number(t);
@@ -27,6 +30,7 @@ export default async function EtiquetaPallet({ params }: { params: Promise<{ num
       <BarraImpresion>
         <Link href={`/pallets/${numero}`} className={clasesBoton("fantasma")}>← Volver al pallet</Link>
         <BotonImprimir />
+        <ImprimirDirecto tipo="pallet" referencia={{ numero }} impresoras={await impresorasActivas(db)} puedeImprimir={tienePermiso(ctx, "pallets", "editar")} />
       </BarraImpresion>
       <Etiqueta100x150>
         <p className="text-xs font-semibold uppercase tracking-wide">Pallet</p>

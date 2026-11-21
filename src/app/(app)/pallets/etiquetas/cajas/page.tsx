@@ -3,6 +3,8 @@ import { clasesBoton, Aviso } from "@/components/ui";
 import { requerirPermiso, tienePermiso } from "@/lib/dal";
 import { etiquetasCajas } from "@/lib/pallets/etiquetas";
 import { formatearFecha } from "@/lib/indicadores/formato";
+import { impresorasActivas } from "@/lib/etiquetas/impresion";
+import { ImprimirDirecto } from "../../imprimir-directo";
 import { Barras, BarraImpresion, Etiqueta100x150 } from "../../etiqueta-base";
 import { ImprimirCajas } from "./imprimir-cajas";
 
@@ -19,6 +21,7 @@ export default async function EtiquetasCajas({ searchParams }: { searchParams: P
       <BarraImpresion>
         <Link href="/pallets/etiquetas" className={clasesBoton("fantasma")}>← Volver a etiquetas</Link>
         {cajas.length > 0 ? <ImprimirCajas cajas={cajas.map((c) => c.caja)} puedeRegistrar={tienePermiso(ctx, "pallets", "editar")} /> : null}
+        {cajas.length > 0 ? <ImprimirDirecto tipo="cajas" referencia={{ desde, hasta }} impresoras={await impresorasActivas(ctx.db)} puedeImprimir={tienePermiso(ctx, "pallets", "editar")} /> : null}
       </BarraImpresion>
       {!valido ? <Aviso tono="error">Escribe un rango de cajas válido (hasta 200 a la vez).</Aviso> : cajas.length === 0 ? <Aviso tono="aviso">No hay cajas en ese rango.</Aviso> : null}
       {reimpresas > 0 ? <div className="print:hidden"><Aviso tono="aviso">{reimpresas} de estas cajas ya tenían etiqueta impresa: es una reimpresión.</Aviso></div> : null}

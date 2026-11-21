@@ -9,7 +9,7 @@ export default async function LayoutPallets({ children }: { children: ReactNode 
     <div className="flex flex-col gap-6 print:gap-0">
       <div className="flex flex-col gap-6 print:hidden">
         <EncabezadoPagina titulo="Pallets y SSCC" descripcion="Pallets de cajas de inventario, y etiquetas de pallets, de cajas y de cajas de despacho con su SSCC." />
-        <Pestanas pestanas={[{ href: "/pallets", etiqueta: "Pallets" }, { href: "/pallets/despacho", etiqueta: "Pallets de despacho" }, { href: "/pallets/etiquetas", etiqueta: "Etiquetas" }]} />
+        <Pestanas pestanas={[{ href: "/pallets", etiqueta: "Pallets" }, { href: "/pallets/despacho", etiqueta: "Pallets de despacho" }, { href: "/pallets/etiquetas", etiqueta: "Etiquetas" }, { href: "/pallets/impresoras", etiqueta: "Impresoras" }]} />
       </div>
       {children}
     </div>

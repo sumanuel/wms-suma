@@ -1,14 +1,17 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { clasesBoton } from "@/components/ui";
-import { requerirPermiso } from "@/lib/dal";
+import { requerirPermiso, tienePermiso } from "@/lib/dal";
+import { impresorasActivas } from "@/lib/etiquetas/impresion";
+import { ImprimirDirecto } from "../../../imprimir-directo";
 import { etiquetasDespacho } from "@/lib/pallets/etiquetas";
 import { formatearFecha } from "@/lib/indicadores/formato";
 import { BotonImprimir } from "../../../../despacho/boton-imprimir";
 import { Barras, BarraImpresion, Etiqueta100x150 } from "../../../etiqueta-base";
 
 export default async function EtiquetasDespacho({ params }: { params: Promise<{ picking: string }> }) {
-  const { db } = await requerirPermiso("pallets", "ver");
+  const ctx = await requerirPermiso("pallets", "ver");
+  const { db } = ctx;
   const { picking: t } = await params;
   if (!/^\d+$/.test(t)) notFound();
   const e = await etiquetasDespacho(db, Number(t));
@@ -18,6 +21,7 @@ export default async function EtiquetasDespacho({ params }: { params: Promise<{ 
       <BarraImpresion>
         <Link href="/pallets/etiquetas" className={clasesBoton("fantasma")}>← Volver a etiquetas</Link>
         <BotonImprimir />
+        <ImprimirDirecto tipo="cajas-despacho" referencia={{ picking: e.picking }} impresoras={await impresorasActivas(db)} puedeImprimir={tienePermiso(ctx, "pallets", "editar")} />
         <span className="text-sm text-gris-500">{e.total} {e.total === 1 ? "etiqueta" : "etiquetas"}, una por caja de despacho.</span>
       </BarraImpresion>
       {e.total === 0 ? <p className="text-sm text-gris-500">Este picking todavía no tiene cajas armadas en la aduana.</p> : null}

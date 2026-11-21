@@ -1,0 +1,12 @@
+/// Impresoras de etiquetas en red (Zebra y compatibles con ZPL por TCP, normalmente puerto 9100).
+model ImpresoraEtiquetas {
+  id        Int      @id @default(autoincrement())
+  nombre    String   @unique @db.VarChar(40)
+  host      String   @db.VarChar(120)
+  puerto    Int      @default(9100)
+  dpi       Int      @default(203)
+  activa    Boolean  @default(true)
+  creada_en DateTime @default(now()) @db.Timestamptz(6)
+
+  @@map("impresora_etiquetas")
+}
