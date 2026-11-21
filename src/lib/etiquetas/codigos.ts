@@ -13,3 +13,11 @@ export function sscc(picking: number, caja: number) {
   for (let i = 0; i < 17; i++) suma += Number(base[i]) * (i % 2 === 0 ? 3 : 1);
   return `${base}${(10 - (suma % 10)) % 10}`;
 }
+
+/** SSCC de 18 dígitos de un pallet de despacho: extensión 1 (pallet), serie de 16 dígitos y dígito de control. */
+export function ssccPallet(id: number) {
+  const base = `1${String(id).padStart(16, "0")}`;
+  let suma = 0;
+  for (let i = 0; i < 17; i++) suma += Number(base[i]) * (i % 2 === 0 ? 3 : 1);
+  return `${base}${(10 - (suma % 10)) % 10}`;
+}
