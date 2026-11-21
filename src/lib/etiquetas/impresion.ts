@@ -8,7 +8,10 @@ import { ssccPallet } from "@/lib/etiquetas/codigos";
 import { etiquetasCajas, etiquetasDespacho, registrarImpresion } from "@/lib/pallets/etiquetas";
 import { detallePallet } from "@/lib/pallets/servicio";
 import { etiquetaPalletDespacho } from "@/lib/pallets/despacho";
-import { unirZpl, zplCajaDespacho, zplCajaInventario, zplPalletDespacho, zplPalletInventario, type Dpi } from "@/lib/etiquetas/zpl";
+import type { Dpi } from "@/lib/etiquetas/zpl";
+import type { Fila } from "@/lib/etiquetas/plantilla";
+import type { TipoEtiqueta } from "@/lib/etiquetas/plantillas-defecto";
+import { llenarPlantilla, plantillaDe } from "@/lib/etiquetas/plantillas";
 
 // Impresión directa en impresoras de etiquetas de red (Zebra y compatibles): el servidor arma el ZPL y lo envía por TCP al puerto 9100.
 // El usuario solo elige una impresora de la lista que administra el WMS; nunca escribe una dirección al imprimir.
@@ -16,7 +19,7 @@ import { unirZpl, zplCajaDespacho, zplCajaInventario, zplPalletDespacho, zplPall
 export const MAX_ETIQUETAS = 200;
 export const TIEMPO_ESPERA_MS = 5000;
 
-export type TipoEtiqueta = "cajas-despacho" | "cajas" | "pallet" | "pallet-despacho";
+export type { TipoEtiqueta };
 export type Referencia = { picking?: number; caja?: number; desde?: number; hasta?: number; numero?: number; id?: number };
 
 // ── Impresoras ────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -91,7 +94,12 @@ function mensajeRed(e: Error) {
 
 export type ZplArmado = { zpl: string; etiquetas: number; cajasInventario?: number[] };
 
+const miles = (n: number) => new Intl.NumberFormat("es-CO", { maximumFractionDigits: 3 }).format(n);
+
+/** Consulta los datos del tipo de etiqueta y los pasa por la plantilla del cliente (o la predeterminada). */
 export async function armarZpl(db: Db, tipo: TipoEtiqueta, ref: Referencia, dpi: Dpi = 203): Promise<ZplArmado> {
+  const { contenido } = await plantillaDe(db, tipo);
+  const llenar = (datos: Fila) => llenarPlantilla(contenido, datos, dpi);
   switch (tipo) {
     case "cajas-despacho": {
       if (!ref.picking) throw new ErrorDeNegocio("Falta el picking.");
@@ -101,10 +109,11 @@ export async function armarZpl(db: Db, tipo: TipoEtiqueta, ref: Referencia, dpi:
       if (cajas.length === 0) throw new ErrorDeNegocio("Ese picking no tiene cajas armadas en la aduana.");
       return {
         etiquetas: cajas.length,
-        zpl: unirZpl(cajas.map((c) => zplCajaDespacho({
+        zpl: cajas.map((c) => llenar({
           pedido: e.pedido, picking: e.picking, numero: c.numero, total: e.total, sscc: c.sscc, cliente: e.cliente, direccion: e.direccion, ciudad: e.ciudad, telefono: e.telefono,
-          lineas: c.lineas.map((l) => ({ articulo: l.articulo, cantidad: l.cantidad, presentacion: l.presentacion, lote: l.lote, vence: l.vence ? formatearFecha(l.vence) : "" })),
-        }, dpi))),
+          masLineas: Math.max(0, c.lineas.length - 7),
+          lineas: c.lineas.map((l) => ({ articulo: l.articulo, cantidad: miles(l.cantidad), presentacion: l.presentacion, lote: l.lote, vence: l.vence ? formatearFecha(l.vence) : "" })),
+        })).join(""),
       };
     }
     case "cajas": {
@@ -115,7 +124,7 @@ export async function armarZpl(db: Db, tipo: TipoEtiqueta, ref: Referencia, dpi:
       return {
         etiquetas: cajas.length,
         cajasInventario: cajas.map((c) => c.caja),
-        zpl: unirZpl(cajas.map((c) => zplCajaInventario({ caja: c.caja, reimpresion: c.impresa, articulo: c.articulo, ean: c.ean, lote: c.lote, vence: c.vence ? formatearFecha(c.vence) : "", cantidad: c.cantidad, ubicacion: c.ubicacion }, dpi))),
+        zpl: cajas.map((c) => llenar({ caja: c.caja, reimpresion: c.impresa, articulo: c.articulo, ean: c.ean, lote: c.lote, vence: c.vence ? formatearFecha(c.vence) : "", cantidad: miles(c.cantidad), ubicacion: c.ubicacion })).join(""),
       };
     }
     case "pallet": {
@@ -129,7 +138,8 @@ export async function armarZpl(db: Db, tipo: TipoEtiqueta, ref: Referencia, dpi:
         x.unidades += Number(c.saldo ?? 0);
         por.set(k, x);
       }
-      return { etiquetas: 1, zpl: zplPalletInventario({ numero: p.numero, cajas: p.cajas.length, unidades: p.unidades, ubicacion: p.ubicaciones.length > 1 ? "Varias" : p.ubicaciones[0] ?? "", lineas: [...por.values()] }, dpi) };
+      const lineas = [...por.values()];
+      return { etiquetas: 1, zpl: llenar({ numero: p.numero, cajas: p.cajas.length, unidades: miles(p.unidades), ubicacion: p.ubicaciones.length > 1 ? "Varias" : p.ubicaciones[0] ?? "", masLineas: Math.max(0, lineas.length - 8), lineas: lineas.map((l) => ({ ...l, unidades: miles(l.unidades) })) }) };
     }
     case "pallet-despacho": {
       if (!ref.id) throw new ErrorDeNegocio("Falta el pallet de despacho.");
@@ -138,12 +148,13 @@ export async function armarZpl(db: Db, tipo: TipoEtiqueta, ref: Referencia, dpi:
       const p = e.pallet;
       return {
         etiquetas: 1,
-        zpl: zplPalletDespacho({
+        zpl: llenar({
           id: ref.id, sscc: ssccPallet(ref.id), bodega: String(p.bodega ?? ""), cajas: e.totales.cajas, peso: p.peso === null ? String(e.totales.kilos) : String(p.peso),
           medidas: p.alto && p.ancho && p.largo ? `${p.largo}x${p.ancho}x${p.alto}` : "-",
-          destinos: e.destinos.map((d) => ({ cliente: d.cliente, pedido: d.pedido, cajas: d.cajas })),
           transporte: [p.transportador, p.remesa ? `remesa ${p.remesa}` : "", p.placa].filter(Boolean).join(" - "),
-        }, dpi),
+          masDestinos: Math.max(0, e.destinos.length - 8),
+          destinos: e.destinos.map((d) => ({ cliente: d.cliente, pedido: d.pedido, cajas: d.cajas })),
+        }),
       };
     }
   }

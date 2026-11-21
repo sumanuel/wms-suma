@@ -1,0 +1,9 @@
+/// Plantillas ZPL propias de cada etiqueta. Si no hay fila para un tipo se usa la predeterminada del sistema.
+model PlantillaZpl {
+  tipo            String   @id @db.VarChar(20)
+  contenido       String
+  actualizada_en  DateTime @default(now()) @db.Timestamptz(6)
+  actualizada_por String?  @db.VarChar(40)
+
+  @@map("plantilla_zpl")
+}

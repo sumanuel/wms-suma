@@ -386,7 +386,7 @@ Las cuatro etiquetas de 100 × 150 mm (cajas de despacho con SSCC, cajas de inve
 
 Probado contra una impresora simulada por TCP: etiqueta de prueba, dos etiquetas de despacho en un trabajo (acentos y `^` correctos), cajas de inventario a 300 dpi con marcado de reimpresión, pallet de despacho, error con la impresora apagada, referencias inválidas rechazadas.
 
-Pendiente: no se ha probado en una impresora física (conviene ajustar márgenes y tamaños de letra con papel real); **ZPL guardado por plantilla** editable por el cliente (`tbltextoimprimezpl` del original); impresión desde el **lector**; cola de impresión con reintentos; impresión de etiquetas de ubicaciones; impresoras por usuario o por estación.
+Pendiente: no se ha probado en una impresora física (conviene ajustar márgenes y tamaños de letra con papel real); (las plantillas editables ya están en 11.29) impresión desde el **lector**; cola de impresión con reintentos; impresión de etiquetas de ubicaciones; impresoras por usuario o por estación.
 
 ### 11.28 Pallets de despacho desde el lector
 
@@ -397,4 +397,16 @@ La caja se lee por el **SSCC de su etiqueta** (`lib/etiquetas/codigos.ts`: `leer
 Probado en el navegador: crear pallet, cargar con y sin «(00)», caja repetida, dígito de control malo, caja inexistente, sacar, cerrar con peso, reabrir y abrir el pallet por su SSCC.
 
 Pendiente: **despachar** desde el lector, leer la caja por número de picking y caja (no solo SSCC), validar que el pallet lleve **todas** las cajas de un picking antes de cerrar, sonido o vibración de confirmación, y cargar varios pallets a un mismo vehículo (planilla de carga).
+
+### 11.29 Plantillas ZPL editables
+
+Las cuatro etiquetas (caja de despacho, caja de inventario, pallet de inventario, pallet de despacho) ya no se arman en código: salen de una **plantilla ZPL** que cada cliente puede cambiar en `/pallets/plantillas` (pestaña «Plantillas ZPL»). Sin plantilla propia se usa la predeterminada del sistema (`lib/etiquetas/plantillas-defecto.ts`, con las mismas posiciones que la vista en pantalla); la propia se guarda en la tabla `plantilla_zpl` (una fila por tipo). Vale para la impresión directa y para el ZPL descargado.
+
+**Lenguaje de la plantilla** (motor en `lib/etiquetas/plantilla.ts`, sin `eval`): `{{campo}}` dato de texto ya escapado para `^FH`; `{{=5*mm}}` número en puntos con + − × ÷ y paréntesis (`mm`, `ancho`, `alto`, `modulo`, `dpi` e `i` disponibles, así la misma plantilla sirve a 203 y 300 dpi); `{{centrar campo}}` columna que centra el Code 128 de un dato; `{{#lineas 7}} … {{/lineas}}` repite por elemento con un máximo; `{{#si campo}} … {{/si}}` condicional. Cada tipo tiene sus variables documentadas bajo el editor (`ETIQUETAS` en `plantillas-defecto.ts`).
+
+**Editor**: guardar (`pallets.eliminar`, como las impresoras), cargar la predeterminada en el editor, restaurar (borra la propia), **ver el ZPL** con datos de ejemplo a 203 o 300 dpi y **imprimir un ejemplo** en una impresora registrada (`pallets.editar`) — ambos con lo escrito aunque no esté guardado. Al guardar se valida contra los datos de ejemplo a las dos resoluciones: variable inexistente, bloque sin cerrar, expresión mala, división por cero, falta de `^XA`/`^XZ` se rechazan con el número de línea. Si una plantilla guardada falla con datos reales se informa «La plantilla de la etiqueta tiene un error» en lugar de imprimir mal. Cada cambio queda en la auditoría.
+
+Probado: plantilla predeterminada igual a la anterior, guardar una propia y ver que la etiqueta real la usa, errores de sintaxis, restaurar, lista con estado, e impresión de ejemplo a una impresora simulada a 300 dpi.
+
+Pendiente: **vista previa gráfica** de la etiqueta (hoy se ve el texto ZPL; una vista gráfica pediría un servicio externo o un renderizador propio), plantillas distintas por **impresora o tamaño de etiqueta**, importar las plantillas del sistema anterior (`tbltextoimprimezpl`), historial de versiones de la plantilla, y copias por etiqueta (`^PQ`) como dato.
 
