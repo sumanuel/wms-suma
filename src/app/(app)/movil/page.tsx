@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ClipboardList, Layers, PackageOpen, PackagePlus, Repeat, MapPin, ScanBarcode, Search, SlidersVertical, type LucideIcon } from "lucide-react";
+import { ClipboardList, Layers, Truck, PackageOpen, PackagePlus, Repeat, MapPin, ScanBarcode, Search, SlidersVertical, type LucideIcon } from "lucide-react";
 import { Tarjeta } from "@/components/ui";
 import { requerirPermiso, tienePermiso } from "@/lib/dal";
 
@@ -10,6 +10,7 @@ const OPCIONES: { href: string; titulo: string; texto: string; icono: LucideIcon
   { href: "/movil/resurtido", titulo: "Resurtido", texto: "Reponer las ubicaciones de picking.", icono: Repeat, modulo: "inventario", accion: "editar" },
   { href: "/movil/ubicar", titulo: "Ubicar caja", texto: "Llevar una caja a otra ubicación.", icono: MapPin, modulo: "inventario", accion: "editar" },
   { href: "/movil/pallet", titulo: "Pallets", texto: "Agregar cajas y ubicar pallets.", icono: Layers, modulo: "pallets", accion: "editar" },
+  { href: "/movil/despacho", titulo: "Pallets de despacho", texto: "Cargar cajas al pallet leyendo su SSCC.", icono: Truck, modulo: "pallets", accion: "editar" },
   { href: "/movil/picking", titulo: "Picking", texto: "Pickear por ruta leyendo la caja.", icono: ScanBarcode, modulo: "prepacking", accion: "editar" },
   { href: "/movil/conteo", titulo: "Conteo", texto: "Contar cajas de un conteo abierto.", icono: ClipboardList, modulo: "conteo", accion: "editar" },
   { href: "/movil/ajuste", titulo: "Ajuste de caja", texto: "Corregir el saldo de una caja.", icono: SlidersVertical, modulo: "inventario", accion: "editar" },

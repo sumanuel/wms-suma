@@ -9,6 +9,9 @@ import { registrarCantidades } from "@/lib/conteo/servicio";
 import { reubicarCaja } from "@/lib/movil/servicio";
 import { completarTarea } from "@/lib/resurtido/servicio";
 import { recibir } from "@/lib/recepcion/servicio";
+import { leerSsccCaja } from "@/lib/etiquetas/codigos";
+import { agregarCajasPallet, cerrarPalletDespacho, crearPalletDespacho, quitarCajaPallet } from "@/lib/pallets/despacho";
+import { redirect } from "next/navigation";
 
 export type Resultado = { error?: string; aviso?: string };
 
@@ -121,6 +124,62 @@ export async function recibirMovil(orden: number, _p: Resultado, form: FormData)
     const r = await recibir(db, { bodega: b[0].bodega, documento: "", nit: null, estado, lineas: [{ ean, lote, vence: vence || null, cajas, cantidad }], orden });
     await registrarCambio(db, { usuarioId: usuario.id, entidad: "recepcion", entidadId: r.documento, accion: "crear", despues: { cajas: r.cajas, unidades: r.unidades, desde: r.desde, hasta: r.hasta, origen: "terminal móvil" } });
     return { aviso: `${r.cajas} caja${r.cajas === 1 ? "" : "s"} (${r.desde}–${r.hasta}) en ${r.ubicacion}.${r.ordenCompleta ? " La orden quedó completa." : ""}` };
+  } catch (e) {
+    return falla(e);
+  }
+}
+
+// ── Pallets de despacho desde el lector ───────────────────────────────────────────────────────────────────────────
+// La caja se lee por el SSCC de su etiqueta (que lleva el picking y el número de caja).
+
+export async function nuevoPalletMovil(_p: Resultado, form: FormData): Promise<Resultado> {
+  const { db, usuario } = await requerirPermisoAccion("pallets", "crear");
+  let id: number;
+  try {
+    id = await crearPalletDespacho(db, String(form.get("bodega") ?? ""), usuario.id);
+    await registrarCambio(db, { usuarioId: usuario.id, entidad: "pallet_despacho", entidadId: String(id), accion: "crear", despues: { origen: "terminal móvil" } });
+  } catch (e) {
+    return falla(e);
+  }
+  redirect(`/movil/despacho/${id}`);
+}
+
+export async function cargarCajaDespacho(id: number, _p: Resultado, form: FormData): Promise<Resultado> {
+  const { db, usuario } = await requerirPermisoAccion("pallets", "crear");
+  const c = leerSsccCaja(String(form.get("sscc") ?? ""));
+  if (!c) return { error: "Lee el código SSCC de la etiqueta de la caja (18 dígitos); ese no es válido." };
+  try {
+    await agregarCajasPallet(db, id, c.picking, [c.caja]);
+    await registrarCambio(db, { usuarioId: usuario.id, entidad: "pallet_despacho", entidadId: String(id), accion: "editar", despues: { picking: c.picking, agregadas: 1, origen: "terminal móvil" } });
+    const n = await db.palletDespachoCaja.count({ where: { pallet_id: id } });
+    return { aviso: `Caja ${c.caja} del picking ${c.picking} cargada. El pallet lleva ${n}.` };
+  } catch (e) {
+    return falla(e);
+  }
+}
+
+export async function sacarCajaDespacho(id: number, _p: Resultado, form: FormData): Promise<Resultado> {
+  const { db, usuario } = await requerirPermisoAccion("pallets", "editar");
+  const c = leerSsccCaja(String(form.get("sscc") ?? ""));
+  if (!c) return { error: "Lee el código SSCC de la etiqueta de la caja (18 dígitos); ese no es válido." };
+  try {
+    await quitarCajaPallet(db, id, c.picking, c.caja);
+    await registrarCambio(db, { usuarioId: usuario.id, entidad: "pallet_despacho", entidadId: String(id), accion: "editar", despues: { quita: c, origen: "terminal móvil" } });
+    return { aviso: `Caja ${c.caja} del picking ${c.picking} sacada del pallet.` };
+  } catch (e) {
+    return falla(e);
+  }
+}
+
+export async function cerrarPalletMovil(id: number, _p: Resultado, form: FormData): Promise<Resultado> {
+  const { db, usuario } = await requerirPermisoAccion("pallets", "editar");
+  const t = String(form.get("peso") ?? "").trim();
+  const peso = t === "" ? null : decimal(t);
+  if (peso !== null && (!Number.isFinite(peso) || peso < 0)) return { error: "El peso debe ser un número, cero o más (o déjalo vacío)." };
+  try {
+    await cerrarPalletDespacho(db, id, { alto: null, ancho: null, largo: null, peso });
+    await registrarCambio(db, { usuarioId: usuario.id, entidad: "pallet_despacho", entidadId: String(id), accion: "editar", despues: { estado: "cerrado", peso, origen: "terminal móvil" } });
+    return { aviso: "Pallet cerrado. Ya se puede imprimir su etiqueta y despachar desde el escritorio." };
   } catch (e) {
     return falla(e);
   }
